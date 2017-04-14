@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+<head>
+	<title>shitty.download</title>
+	<meta charset="utf-8" />
+
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.9/semantic.min.css" rel="stylesheet">
+
+	<style>
+		body {
+			background: #dadada;
+		}
+
+		body > .grid {
+			height: 100%;
+		}
+	</style>
+</head>
+<body>
+{{{body}}}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.9/semantic.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery_lazyload/1.9.7/jquery.lazyload.min.js"></script>
+<script>
+	$(function() {
+		$("img.lazy").lazyload({
+			effect: "fadeIn"
+		});
+
+		$(".ui.file.input").find("input:text, .ui.button").on("click", function(e) {
+			$(e.target).parent().find("input:file").click();
+		});
+
+		$("input:file", ".ui.file.input").on("change", function(e) {
+			var file = $(e.target);
+			var name = "";
+
+			for (var i=0; i<e.target.files.length; i++) {
+				name += e.target.files[i].name + ", ";
+			}
+
+			name = name.replace(/,\s*$/, "");
+
+			$("input:text", file.parent()).val(name);
+		});
+	});
+</script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+{
+  "name": "shittydl",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "coderain": "^1.1.0",
+    "compression": "^1.6.2",
+    "express": "^4.15.2",
+    "express-basic-auth": "^1.0.1",
+    "express-busboy": "^6.0.1",
+    "express-handlebars": "^3.0.0",
+    "express-static-gzip": "^0.2.2",
+    "handlebars-helpers": "^0.8.1",
+    "helper-dateformat": "^1.0.0",
+    "lodash": "^4.17.4",
+    "paginator": "^1.0.0"
+  }
+}

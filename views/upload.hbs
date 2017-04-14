@@ -1,0 +1,40 @@
+<div class="ui middle aligned center aligned grid">
+	<div class="column">
+		<div class="ui centered brown card">
+			<div class="ui content center aligned icon">
+				<img class="icon" src="/poop.png">
+				<div class="header" style="color: #a5673f !important; font-size: 175%">shitty.download</div>
+			</div>
+			<div class="ui content text">
+				<form class="ui basic form segment left aligned" action="/upload" method="post" enctype="multipart/form-data">
+					<div class="field">
+						<label for="ffile">File</label>
+						<div class="ui fluid file input action">
+							<input type="text" readonly placeholder="File">
+							<input type="file" id="ffile" name="file" autocomplete="off">
+							<div class="ui button">
+								Select...
+							</div>
+						</div>
+					</div>
+					<div class="field">
+						<label for="password">Password</label>
+						<input type="password" name="password" placeholder="Password">
+					</div>
+					<div class="field">
+						<label for="name">Custom filename (optional)</label>
+						<input type="text" name="name" placeholder="Custom filename (optional)">
+					</div>
+					<input type="hidden" name="online" value="yes">
+					<button class="ui fluid primary button" type="submit">Submit</button>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+
+<style>
+	.ui.file.input input[type="file"] {
+		display: none;
+	}
+</style>
