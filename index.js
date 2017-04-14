@@ -22,7 +22,7 @@ let statCache = {};
 app.engine(".hbs", handlebars({ defaultLayout: "main", extname: ".hbs", helpers: _.merge(helpers, { "dateformat" : dateformat }) }));
 app.set("view engine", ".hbs");
 app.use(express.static("public"));
-app.use(express.static("/var/www-ichi/src"));
+app.use(express.static(config.imagePath));
 // app.use(compression());
 
 bb.extend(app, {
@@ -76,9 +76,9 @@ app.post("/upload", (req, res) => {
 		if (attempts > 20) {
 			return error(req, res, "Could not generate unique filename after 20 attempts.");
 		}
-	} while (fs.exists(`/var/www-ichi/src/${name}${ext}`));
+	} while (fs.exists(`${config.imagePath}/${name}${ext}`));
 
-	fs.rename(file.file, `/var/www-ichi/src/${name}${ext}`, () => {
+	fs.rename(file.file, `${config.imagePath}/${name}${ext}`, () => {
 		let baseURL = req.protocol + '://' + req.get('host');
 
 		if (req.body.online === "yes") {
@@ -93,7 +93,7 @@ app.post("/upload", (req, res) => {
 });
 
 app.get("/gallery/:page?", auth, (req, res) => {
-	glob("*.{jpg,png,gif,jpeg}", { cwd: "/var/www-ichi/src" }, (err, files) => {
+	glob("*.{jpg,png,gif,jpeg}", { cwd: config.imagePath }, (err, files) => {
 		let page = typeof req.params.page !== "undefined" ? parseInt(req.params.page) : 0;
 		page = Math.min(Math.max(0, page), files.length);
 
@@ -103,7 +103,7 @@ app.get("/gallery/:page?", auth, (req, res) => {
 			if (statCache[f]) {
 				return statCache[f];
 			} else {
-				let stat = fs.statSync(`/var/www-ichi/src/${f}`);
+				let stat = fs.statSync(`${config.imagePath}/${f}`);
 				let o = {
 					name: f,
 					size: stat.size,
@@ -123,7 +123,7 @@ app.get("/gallery/:page?", auth, (req, res) => {
 });
 
 app.get("/list/:page?", auth, (req, res) => {
-	glob("*.*", { cwd: "/var/www-ichi/src" }, (err, files) => {
+	glob("*.*", { cwd: config.imagePath }, (err, files) => {
 		let page = typeof req.params.page !== "undefined" ? parseInt(req.params.page) : 0;
 		page = Math.min(Math.max(0, page), files.length);
 
@@ -133,7 +133,7 @@ app.get("/list/:page?", auth, (req, res) => {
 			if (statCache[f]) {
 				return statCache[f];
 			} else {
-				let stat = fs.statSync(`/var/www-ichi/src/${f}`);
+				let stat = fs.statSync(`${config.imagePath}/${f}`);
 				let o = {
 					name: f,
 					size: stat.size,
