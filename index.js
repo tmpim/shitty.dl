@@ -44,11 +44,11 @@ function error(req, res, error) {
 }
 
 app.get("/", (req, res) => {
-	res.render("home");
+	res.render("home", {config: _.omit(config, "password")});
 });
 
 app.get("/upload", (req, res) => {
-	res.render("upload");
+	res.render("upload", {config: _.omit(config, "password")});
 });
 
 app.post("/upload", (req, res) => {
