@@ -1,0 +1,11 @@
+{
+    "logo": "poop.png",
+    "name": "shitty.download",
+    "name_color": "#a5673f",
+    "title": "lemmmy's file host lies here",
+    "disclaimer": "for dmca etc., contact drew at lemmmy dot pw",
+    "password": "",
+    "imagePath": "/path/to/images",
+    "url": "https://your.host/",
+    "listen": "3000"
+}
