@@ -2,11 +2,11 @@
 	<div class="column">
 		<div class="ui centered brown card">
 			<div class="ui content center aligned icon">
-				<img class="icon" src="/poop.png">
-				<div class="header" style="color: #a5673f !important; font-size: 175%">shitty.download</div>
+				<img class="icon" src="/{{ config.logo }}">
+				<div class="header" style="color: {{ config.name_color }} !important; font-size: 175%">{{ config.name }}</div>
 			</div>
 			<p class="ui content text" style="font-size: 120%">
-				lemmmy's file host lies here
+				{{ config.title }}
 			</p>
 			<div class="ui content">
 				<div class="ui three basic buttons">
@@ -16,7 +16,7 @@
 				</div>
 			</div>
 			<p class="ui content text">
-				<small>for dmca etc., contact drew at lemmmy dot pw</small>
+				<small>{{ config.disclaimer }}</small>
 			</p>
 		</div>
 	</div>
