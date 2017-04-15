@@ -80,7 +80,7 @@ app.post("/upload", (req, res) => {
 
 	fs.rename(file.file, `${config.imagePath}/${name}${ext}`, err => {
 		if (err) {
-			return console.err(err);
+			return console.error(err);
 		}
 
 		let baseURL = req.protocol + '://' + req.get('host');
