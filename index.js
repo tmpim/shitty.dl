@@ -78,7 +78,11 @@ app.post("/upload", (req, res) => {
 		}
 	} while (fs.exists(`${config.imagePath}/${name}${ext}`));
 
-	fs.rename(file.file, `${config.imagePath}/${name}${ext}`, () => {
+	fs.rename(file.file, `${config.imagePath}/${name}${ext}`, err => {
+		if (err) {
+			return console.err(err);
+		}
+
 		let baseURL = req.protocol + '://' + req.get('host');
 
 		if (req.body.online === "yes") {
