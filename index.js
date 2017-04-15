@@ -32,7 +32,7 @@ bb.extend(app, {
 let auth = basicAuth({
 	authorizer: (user, pass) => crypto.createHash("sha256").update(pass).digest("hex") === config.password,
 	challenge: true,
-	realm: "shitty.download"
+	realm: config.url
 });
 
 function error(req, res, error) {
@@ -82,11 +82,11 @@ app.post("/upload", (req, res) => {
 		let baseURL = req.protocol + '://' + req.get('host');
 
 		if (req.body.online === "yes") {
-			res.redirect(`https://shitty.download/${name}${ext}`);
+			res.redirect(`${config.url}${name}${ext}`);
 		} else {
 			res.json({
 				ok: true,
-				url: `https://shitty.download/${name}${ext}`
+				url: `${config.url}${name}${ext}`
 			});
 		}
 	});
@@ -152,4 +152,4 @@ app.get("/list/:page?", auth, (req, res) => {
 	});
 });
 
-app.listen("4109");
+app.listen(config.listen);
