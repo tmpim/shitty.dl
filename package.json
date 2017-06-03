@@ -15,6 +15,7 @@
     "express-basic-auth": "^1.0.1",
     "express-busboy": "^6.0.1",
     "express-handlebars": "^3.0.0",
+    "express-prom-bundle": "^2.2.0",
     "express-static-gzip": "^0.2.2",
     "handlebars-helpers": "^0.8.1",
     "helper-dateformat": "^1.0.0",

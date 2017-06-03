@@ -5,6 +5,7 @@ const compression = require("compression");
 const basicAuth = require("express-basic-auth");
 const bb = require("express-busboy");
 const handlebars = require("express-handlebars");
+const promBundle = require("express-prom-bundle");
 const helpers = require("handlebars-helpers")();
 const dateformat = require("helper-dateformat");
 const Paginator = require("paginator");
@@ -13,6 +14,7 @@ const crypto = require("crypto");
 const fs = require("fs");
 const path = require("path");
 const glob = require("glob");
+const url = require("url");
 const CodeRain = require("coderain");
 let cr = new CodeRain("####");
 
@@ -42,6 +44,14 @@ function error(req, res, error) {
 		res.render("error", { error });
 	}
 }
+
+app.use(promBundle({
+	includeMethod: true,
+	includePath: true,
+	normalizePath: (req, opts) => {
+		return url.parse(req.originalUrl).pathname;
+	}
+}));
 
 app.get("/", (req, res) => {
 	res.render("home", {config: _.omit(config, "password")});
