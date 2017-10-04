@@ -1,4 +1,4 @@
-const config = require("./config.json");
+const config = require(process.argv[2] || "./config.json");
 const _ = require("lodash");
 const express = require("express");
 const compression = require("compression");
@@ -16,7 +16,7 @@ const path = require("path");
 const glob = require("glob");
 const url = require("url");
 const CodeRain = require("coderain");
-let cr = new CodeRain("####");
+let cr = new CodeRain(("#").repeat(config.fileLength || 4));
 
 let app = express();
 let statCache = {};
