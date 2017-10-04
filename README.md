@@ -16,7 +16,8 @@ Make a file called `config.json`, with the following properties:
     "password": "",
     "imagePath": "/path/to/images",
     "url": "https://your.host/",
-    "listen": "3000"
+    "listen": "3000",
+    "fileLength": 4
 }
 ```
 - `logo` - Filename of your logo image. Make sure to put this in /public.
