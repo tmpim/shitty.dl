@@ -29,6 +29,7 @@ Make a file called `config.json`, with the following properties:
 - `imagePath` - The absolute path to your image storage directory.
 - `url` - The full URL of your host to be prepended to image paths. Trailing slash required.
 - `listen` The port or unix sock to listen to.
+- `fileLength` Amount of characters in generated filenames. Default is 4.
 
 ## Notes
 
