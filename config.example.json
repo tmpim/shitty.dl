@@ -7,5 +7,6 @@
     "password": "",
     "imagePath": "/path/to/images",
     "url": "https://your.host/",
-    "listen": "3000"
+    "listen": "3000",
+    "fileLength": 4
 }
