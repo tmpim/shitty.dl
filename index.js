@@ -48,7 +48,7 @@ function error(req, res, error) {
 function moveFile(oldPath, newPath, callback) {
 	fs.rename(oldPath, newPath, function (err) {
 		if (err) {
-			if (err.code === 'EXDEV') {
+			if (err.code === "EXDEV") {
 				copy();
 			} else {
 				callback(err);
@@ -62,10 +62,10 @@ function moveFile(oldPath, newPath, callback) {
 		var readStream = fs.createReadStream(oldPath);
 		var writeStream = fs.createWriteStream(newPath);
 
-		readStream.on('error', callback);
-		writeStream.on('error', callback);
+		readStream.on("error", callback);
+		writeStream.on("error", callback);
 
-		readStream.on('close', function () {
+		readStream.on("close", function () {
 			fs.unlink(oldPath, callback);
 		});
 
