@@ -98,7 +98,7 @@ app.post("/upload", (req, res) => {
 	if (crypto.createHash("sha256").update(req.body.password).digest("hex") !== config.password) return error(req, res, "Incorrect password.");
 
 	let file = req.files.file;
-	let ext = path.extname(file.filename);
+	let ext = sanitizeFilename(req.query.ext) || path.extname(file.filename);
 
 	if (ext.toLowerCase() === ".php") return error(req, res, "Disallowed file type.");
 
@@ -155,7 +155,7 @@ app.get("/paste/:file", (req, res) => {
       style: config.pasteThemePath || "https://atom.github.io/highlights/examples/atom-dark.css",
       name: filename,
       layout: false
-    })
+    });
 
     fs.readFile(filePath, "utf8", (err, data) => {
       if (err) return res.status(404).send("File not found");
