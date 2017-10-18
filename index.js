@@ -152,7 +152,7 @@ app.get("/paste/:file", (req, res) => {
 
     res.render("paste", {
       paste: html,
-      style: config.pasteThemePath || "http://atom.github.io/highlights/examples/atom-dark.css",
+      style: config.pasteThemePath || "https://atom.github.io/highlights/examples/atom-dark.css",
       name: filename,
       layout: false
     })
