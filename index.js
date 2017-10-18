@@ -124,7 +124,9 @@ app.post("/upload", (req, res) => {
 			return console.error(err);
 		}
 
-		let baseURL = req.protocol + '://' + req.get('host');
+		if (typeof req.query.paste !== "undefined") {
+		  name = "paste/" + name;
+    }
 
 		if (req.body.online === "yes") {
 			res.redirect(`${config.url}${name}${ext}`);
