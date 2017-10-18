@@ -1,0 +1,33 @@
+<!doctype html>
+<html>
+<head>
+	<title>{{ name }}</title>
+	<meta charset="utf-8" />
+
+	<link href="{{ style }}" rel="stylesheet">
+
+	<style>
+		body, html {
+			width: 100%;
+			min-height: 100vh;
+			margin: 0;
+		}
+
+		pre {
+			margin: 0;
+			padding: 8px;
+		}
+
+		.editor {
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+		}
+	</style>
+</head>
+<body>
+	{{{ paste }}}
+</body>
+</html>

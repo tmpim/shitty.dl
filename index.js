@@ -15,6 +15,9 @@ const fs = require("fs");
 const path = require("path");
 const glob = require("glob");
 const url = require("url");
+const Highlights = require("highlights");
+const highlighter = new Highlights();
+const sanitizeFilename = require("sanitize-filename");
 const CodeRain = require("coderain");
 let cr = new CodeRain(("#").repeat(config.fileLength || 4));
 
@@ -114,7 +117,7 @@ app.post("/upload", (req, res) => {
 		if (attempts > 20) {
 			return error(req, res, "Could not generate unique filename after 20 attempts.");
 		}
-	} while (fs.exists(`${config.imagePath}/${name}${ext}`));
+	} while (fs.existsSync(`${config.imagePath}/${name}${ext}`));
 
 	moveFile(file.file, `${config.imagePath}/${name}${ext}`, err => {
 		if (err) {
@@ -132,6 +135,30 @@ app.post("/upload", (req, res) => {
 			});
 		}
 	});
+});
+
+app.get("/paste/:file", (req, res) => {
+	let filename = sanitizeFilename(req.params.file);
+	let filePath = path.join(config.imagePath, filename);
+
+  if (!filePath) return res.status(404).send("File not found");
+
+	fs.stat(filePath, (err, stats) => {
+    if (err || !stats.isFile()) return res.status(404).send("File not found");
+
+    let html = highlighter.highlightSync({ filePath });
+
+    res.render("paste", {
+      paste: html,
+      style: config.pasteThemePath || "http://atom.github.io/highlights/examples/atom-dark.css",
+      name: filename,
+      layout: false
+    })
+
+    fs.readFile(filePath, "utf8", (err, data) => {
+      if (err) return res.status(404).send("File not found");
+    });
+  });
 });
 
 app.get("/gallery/:page?", auth, (req, res) => {

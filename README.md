@@ -17,7 +17,8 @@ Make a file called `config.json`, with the following properties:
     "imagePath": "/path/to/images",
     "url": "https://your.host/",
     "listen": "3000",
-    "fileLength": 4
+    "fileLength": 4,
+    "pasteThemePath": "http://atom.github.io/highlights/examples/atom-dark.css"
 }
 ```
 - `logo` - Filename of your logo image. Make sure to put this in /public.
@@ -30,6 +31,7 @@ Make a file called `config.json`, with the following properties:
 - `url` - The full URL of your host to be prepended to image paths. Trailing slash required.
 - `listen` The port or unix sock to listen to.
 - `fileLength` Amount of characters in generated filenames. Default is 4.
+- `pasteThemePath` Location of a theme for the paste syntax highlighter.
 
 ## Notes
 
