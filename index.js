@@ -42,6 +42,12 @@ let auth = basicAuth({
 });
 
 function error(req, res, error) {
+	console.error(util.inspect(error, {
+		depth: null,
+		colors: true,
+		showHidden: true
+	}));
+
 	if (req.xhr || req.headers.accept.indexOf('json') > -1) {
 		res.json({ ok: false, error });
 	} else {
