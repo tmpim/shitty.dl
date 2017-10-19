@@ -51,7 +51,7 @@ function error(req, res, error) {
 	if (req.xhr || req.headers.accept.indexOf('json') > -1) {
 		res.json({ ok: false, error });
 	} else {
-		res.render("error-detailed", { error });
+		res.render("error", { errorText: error });
 	}
 }
 
