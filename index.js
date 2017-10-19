@@ -15,6 +15,7 @@ const fs = require("fs");
 const path = require("path");
 const glob = require("glob");
 const url = require("url");
+const util = require("util");
 const Highlights = require("highlights");
 const highlighter = new Highlights();
 const sanitizeFilename = require("sanitize-filename");
@@ -121,7 +122,7 @@ app.post("/upload", (req, res) => {
 
 	moveFile(file.file, `${config.imagePath}/${name}${ext}`, err => {
 		if (err) {
-			return console.error(err);
+			return console.error(util.inspect(err, { depth: null }));
 		}
 
 		if (typeof req.query.paste !== "undefined") {
