@@ -122,7 +122,7 @@ app.post("/upload", (req, res) => {
 
 	moveFile(file.file, `${config.imagePath}/${name}${ext}`, err => {
 		if (err) {
-			return console.error(util.inspect(err, { depth: null }));
+			return console.error(JSON.stringify(err));
 		}
 
 		if (typeof req.query.paste !== "undefined") {
