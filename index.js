@@ -100,13 +100,12 @@ app.use(promBundle({
 	}
 }));
 
-app.get("/", (req, res) => {
+app.get(["/", "/home"], (req, res) => {
 	res.render("home", {
 		config: _.omit(config, ["password", "sessionSecret"]),
 		authed: req.session && req.session.authed
 	});
 });
-
 
 function auth(req, res, next) {
 	if (!req.session || !req.session.authed) {
