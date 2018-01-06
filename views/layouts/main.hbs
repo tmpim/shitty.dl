@@ -5,6 +5,7 @@
 	<meta charset="utf-8" />
 
 	<link href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.9/semantic.min.css" rel="stylesheet">
+	<link href="https://cdn.rawgit.com/mdehoog/Semantic-UI-Calendar/76959c6f7d33a527b49be76789e984a0a407350b/dist/calendar.min.css" rel="stylesheet" type="text/css" />
 
 	<style>
 		body {
@@ -20,6 +21,8 @@
 {{{body}}}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.9/semantic.min.js"></script>
+<script src="https://cdn.rawgit.com/mdehoog/Semantic-UI-Calendar/76959c6f7d33a527b49be76789e984a0a407350b/dist/calendar.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qs/6.5.1/qs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery_lazyload/1.9.7/jquery.lazyload.min.js"></script>
 <script>
 	$(function() {
@@ -42,6 +45,29 @@
 			name = name.replace(/,\s*$/, "");
 
 			$("input:text", file.parent()).val(name);
+		});
+
+		$("#rangestart").calendar({
+			type: "date",
+			endCalendar: $("#rangeend")
+		});
+
+		$("#rangeend").calendar({
+			type: "date",
+			startCalendar: $("#rangestart")
+		});
+
+		$(".ui.accordion").accordion();
+
+		$("#filter-submit").click(function() {
+			const q = Qs.parse(location.search);
+			q.start = $("#rangestart").calendar("get date");
+			q.end = $("#rangeend").calendar("get date");
+			location.search = Qs.stringify(q);
+		});
+
+		$("#filter-clear").click(function() {
+			location.search = "";
 		});
 	});
 </script>

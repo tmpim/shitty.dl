@@ -4,7 +4,6 @@ const _ = require("lodash");
 
 const fs = require("fs");
 const path = require("path");
-const glob = require("glob");
 const url = require("url");
 const util = require("util");
 
@@ -16,6 +15,8 @@ const session = require("express-session");
 const SQLiteStore = require("connect-sqlite3")(session);
 const helpers = require("handlebars-helpers")();
 const dateformat = require("helper-dateformat");
+const Finder = require("fs-finder");
+const moment = require("moment");
 
 const paginator = new require("paginator")(48, 8);
 const crypto = require("crypto");
@@ -200,38 +201,42 @@ app.get("/paste/:file", (req, res) => {
   });
 });
 
-function fileListing(globPattern, pageTemplate, route, req, res) {
-	glob(globPattern, { cwd: config.imagePath }, (err, files) => {
-		let page = typeof req.params.page !== "undefined" ? parseInt(req.params.page) : 0;
-		page = Math.min(Math.max(0, page), files.length);
+function fileListing(mask, pageTemplate, route, req, res) {
+	const finder = Finder.from(config.imagePath);
+	if (req.query.start) finder.date(">", moment(req.query.start).set({hours: 0, minutes: 0, seconds: 0, milliseconds: 0}).toISOString());
+	if (req.query.end) finder.date("<", moment(req.query.end).set({hours: 0, minutes: 0, seconds: 0, milliseconds: 0}).add(1, "day").toISOString());
+	const files = finder.findFiles(mask);
 
-		const paginationInfo = paginator.build(files.length, page);
+	let page = typeof req.params.page !== "undefined" ? parseInt(req.params.page) : 0;
+	page = Math.min(Math.max(0, page), files.length);
 
-		const fullFiles = _.reverse(_.sortBy(_.map(files, f => {
-			if (statCache[f]) return statCache[f];
+	const paginationInfo = paginator.build(files.length, page);
 
-			const stat = fs.statSync(`${config.imagePath}/${f}`);
-			const o = {
-				name: f,
-				size: stat.size,
-				mtime: stat.mtime
-			};
+	const fullFiles = _.reverse(_.sortBy(_.map(files, f => {
+		if (statCache[f]) return statCache[f];
 
-			statCache[f] = o;
+		const stat = fs.statSync(`${f}`);
+		const o = {
+			name: path.relative(config.imagePath, f),
+			size: stat.size,
+			mtime: stat.mtime
+		};
 
-			return o;
-		}), "mtime"));
+		statCache[f] = o;
 
-		res.render(pageTemplate, {
-			route,
-			paginationInfo,
-			pages: _.range(paginationInfo.first_page, paginationInfo.last_page),
-			files: _.slice(fullFiles, paginationInfo.first_result, paginationInfo.last_result + 1)
-		});
+		return o;
+	}), "mtime"));
+
+	res.render(pageTemplate, {
+		route,
+		query: url.parse(req.url).query,
+		paginationInfo,
+		pages: _.range(paginationInfo.first_page, paginationInfo.last_page + 1),
+		files: _.slice(fullFiles, paginationInfo.first_result, paginationInfo.last_result + 1)
 	});
 }
 
-app.get("/gallery/:page?", auth, (req, res) => fileListing("*.{jpg,png,gif,jpeg}", "gallery", "gallery", req, res));
+app.get("/gallery/:page?", auth, (req, res) => fileListing("*.<(jpeg|jpg|png|gif)$>", "gallery", "gallery", req, res));
 app.get("/list/:page?", auth, (req, res) => fileListing("*.*", "list", "list", req, res));
 
 app.listen(config.listen);
