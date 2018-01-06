@@ -202,6 +202,10 @@ app.get("/paste/:file", (req, res) => {
 });
 
 function fileListing(mask, pageTemplate, route, req, res) {
+	if (req.query.extensions) {
+		mask = `*.<(${req.query.extensions.split(",").join("|")})$>`;
+	}
+
 	const finder = Finder.from(config.imagePath);
 	if (req.query.start) finder.date(">", moment(req.query.start).set({hours: 0, minutes: 0, seconds: 0, milliseconds: 0}).toISOString());
 	if (req.query.end) finder.date("<", moment(req.query.end).set({hours: 0, minutes: 0, seconds: 0, milliseconds: 0}).add(1, "day").toISOString());

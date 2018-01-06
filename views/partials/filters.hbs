@@ -5,30 +5,33 @@
 	</div>
 	<div class="content">
 		<div class="three fields">
-			<div class="two fields">
-				<div class="field">
-					<label>Start date</label>
-					<div class="ui calendar" id="rangestart">
-						<div class="ui input left icon">
-							<i class="calendar icon"></i>
-							<input type="text" placeholder="Start">
-						</div>
+			<div class="field">
+				<label>Start date</label>
+				<div class="ui calendar" id="rangestart">
+					<div class="ui input left icon">
+						<i class="calendar icon"></i>
+						<input type="text" placeholder="Start">
 					</div>
 				</div>
-				<br/>
-				<div class="field">
-					<label>End date</label>
-					<div class="ui calendar" id="rangeend">
-						<div class="ui input left icon">
-							<i class="calendar icon"></i>
-							<input type="text" placeholder="End">
-						</div>
-					</div>
-				</div>
-				<br/>
-				<button class="ui button" id="filter-clear">Clear</button>
-				<button class="ui primary button" id="filter-submit">Filter</button>
 			</div>
+			<br/>
+			<div class="field">
+				<label>End date</label>
+				<div class="ui calendar" id="rangeend">
+					<div class="ui input left icon">
+						<i class="calendar icon"></i>
+						<input type="text" placeholder="End">
+					</div>
+				</div>
+			</div>
+			<br/>
+			<label>File extensions (comma separated)</label><br />
+			<div class="ui field input">
+				<input type="text" placeholder="Extensions" id="filter-extensions">
+			</div>
+			<br/><br/>
+			<button class="ui button" id="filter-clear">Clear</button>
+			<button class="ui primary button" id="filter-submit">Filter</button>
 		</div>
 	</div>
 </div>

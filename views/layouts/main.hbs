@@ -60,9 +60,10 @@
 		$(".ui.accordion").accordion();
 
 		$("#filter-submit").click(function() {
-			const q = Qs.parse(location.search);
+			const q = Qs.parse(location.search.replace(/^\?/, ""));
 			q.start = $("#rangestart").calendar("get date");
 			q.end = $("#rangeend").calendar("get date");
+			q.extensions = encodeURIComponent($("#filter-extensions").val());
 			location.search = Qs.stringify(q);
 		});
 
