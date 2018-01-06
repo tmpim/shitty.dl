@@ -187,18 +187,23 @@ app.get("/paste/:file", (req, res) => {
 
 	if (!filePath) return res.status(404).send("File not found");
 
-	fs.stat(filePath, (err, stats) => {
-	if (err || !stats.isFile()) return res.status(404).send("File not found");
+	try {
+		const stats = fs.statSync(filePath);
 
-	const html = highlighter.highlightSync({ filePath });
+		if (!stats.isFile()) return res.status(404).send("File not found");
+		if (stats.size > 2 ^ 9) return error(req, res, "File too large");
 
-	res.render("paste", {
-	  paste: html,
-	  style: config.pasteThemePath || "https://atom.github.io/highlights/examples/atom-dark.css",
-	  name: filename,
-	  layout: false
-	});
-  });
+		const html = highlighter.highlightSync({filePath});
+
+		res.render("paste", {
+			paste: html,
+			style: config.pasteThemePath || "https://atom.github.io/highlights/examples/atom-dark.css",
+			name: filename,
+			layout: false
+		});
+	} catch (err) {
+		error(req, res, err);
+	}
 });
 
 function fileListing(mask, pageTemplate, route, req, res) {
