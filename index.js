@@ -13,6 +13,7 @@ const bb = require("express-busboy");
 const handlebars = require("express-handlebars");
 const promBundle = require("express-prom-bundle");
 const session = require("express-session");
+const SQLiteStore = require("connect-sqlite3")(session);
 const helpers = require("handlebars-helpers")();
 const dateformat = require("helper-dateformat");
 
@@ -40,7 +41,8 @@ app.use(session({
 	secret: config.sessionSecret,
 	cookie: {},
 	resave: false,
-	saveUninitialized: true
+	saveUninitialized: true,
+	store: new SQLiteStore
 }));
 
 bb.extend(app, {
