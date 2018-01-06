@@ -8,13 +8,16 @@
 			<p class="ui content text" style="font-size: 120%">
 				{{ config.title }}
 			</p>
-			<div class="ui content">
-				<div class="ui three basic buttons">
-					<a href="/gallery" class="ui button">Gallery</a>
-					<a href="/list" class="ui button">List</a>
-					<a href="/upload" class="ui button">Upload</a>
-				</div>
-			</div>
+			<form class="ui content" action="/login" method="post">
+				{{#if authed}}
+					{{> navigation }}
+				{{else}}
+					<div class="ui action fluid input">
+						<input type="password" placeholder="Password" name="password">
+						<button type="submit" class="ui basic button">Submit</button>
+					</div>
+				{{/if}}
+			</form>
 			<p class="ui content text">
 				<small>{{ config.disclaimer }}</small>
 			</p>

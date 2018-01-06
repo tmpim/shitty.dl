@@ -5,6 +5,9 @@
 				<img class="icon" src="/{{ config.logo }}">
 				<div class="header" style="color: {{ config.name_color }} !important; font-size: 175%">{{ config.name }}</div>
 			</div>
+			<div class="ui content center aligned">
+				{{> navigation }}
+			</div>
 			<div class="ui content text">
 				<form class="ui basic form segment left aligned" action="/upload" method="post" enctype="multipart/form-data">
 					<div class="field">
@@ -16,10 +19,6 @@
 								Select...
 							</div>
 						</div>
-					</div>
-					<div class="field">
-						<label for="password">Password</label>
-						<input type="password" name="password" placeholder="Password">
 					</div>
 					<div class="field">
 						<label for="name">Custom filename (optional)</label>

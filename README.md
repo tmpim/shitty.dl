@@ -18,7 +18,8 @@ Make a file called `config.json`, with the following properties:
     "url": "https://your.host/",
     "listen": "3000",
     "fileLength": 4,
-    "pasteThemePath": "http://atom.github.io/highlights/examples/atom-dark.css"
+    "pasteThemePath": "http://atom.github.io/highlights/examples/atom-dark.css",
+    "sessionSecret": ""
 }
 ```
 - `logo` - Filename of your logo image. Make sure to put this in /public.
@@ -32,6 +33,7 @@ Make a file called `config.json`, with the following properties:
 - `listen` The port or unix sock to listen to.
 - `fileLength` Amount of characters in generated filenames. Default is 4.
 - `pasteThemePath` Location of a theme for the paste syntax highlighter.
+- `sessionSecret` Secret for session storage. Should be a secure random string.
 
 ## Notes
 

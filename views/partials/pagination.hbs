@@ -2,13 +2,13 @@
 	<b>{{addCommas paginationInfo.total_results}}</b> total results - <b>{{addCommas paginationInfo.total_pages}}</b> pages
 </p>
 <div class="ui buttons">
-	<a href="/gallery/{{paginationInfo.previous_page}}" class="ui icon button {{#unless paginationInfo.has_previous_page}}disabled{{/unless}}">
+	<a href="/{{@root.route}}/{{paginationInfo.previous_page}}" class="ui icon button {{#unless paginationInfo.has_previous_page}}disabled{{/unless}}">
 		<i class="left chevron icon"></i>
 	</a>
 	{{#each pages}}
-		<a href="/gallery/{{this}}" class="ui button {{#is @root.paginationInfo.current_page this}}disabled{{/is}}">{{this}}</a>
+		<a href="/{{@root.route}}/{{this}}" class="ui button {{#is @root.paginationInfo.current_page this}}disabled{{/is}}">{{this}}</a>
 	{{/each}}
-	<a href="/gallery/{{paginationInfo.next_page}}" class="ui right icon button {{#unless paginationInfo.has_next_page}}disabled{{/unless}}">
+	<a href="/{{@root.route}}/{{paginationInfo.next_page}}" class="ui right icon button {{#unless paginationInfo.has_next_page}}disabled{{/unless}}">
 		<i class="right chevron icon"></i>
 	</a>
 </div>
