@@ -25,6 +25,7 @@ const highlighter = new Highlights();
 const sanitizeFilename = require("sanitize-filename");
 const CodeRain = require("coderain");
 const cr = new CodeRain(("#").repeat(config.fileLength || 4));
+const filesize = require("filesize");
 
 const app = express();
 const statCache = {};
@@ -189,8 +190,10 @@ app.get("/paste/:file", (req, res) => {
 	try {
 		const stats = fs.statSync(filePath);
 
+    console.log(stats);
+
 		if (!stats.isFile()) return res.status(404).send("File not found");
-		if (stats.size > 2 ^ 19) return error(req, res, "File too large");
+		if (stats.size > 2 ** 19) return error(req, res, `File too large (${filesize(stats.size)})`);
 
 		const html = highlighter.highlightSync({filePath});
 
