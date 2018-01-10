@@ -190,7 +190,7 @@ app.get("/paste/:file", (req, res) => {
 		const stats = fs.statSync(filePath);
 
 		if (!stats.isFile()) return res.status(404).send("File not found");
-		if (stats.size > 2 ^ 9) return error(req, res, "File too large");
+		if (stats.size > 2 ^ 19) return error(req, res, "File too large");
 
 		const html = highlighter.highlightSync({filePath});
 
