@@ -207,7 +207,7 @@ app.get("/paste/:file", (req, res) => {
 		if (!stats.isFile()) return res.status(404).send("File not found");
 		if (stats.size > 2 ** 19) return error(req, res, `File too large (${filesize(stats.size)})`);
 
-		const html = highlighter.highlightSync({filePath, scopeName: config.oldPasteThemeCompatibility ? "" : "syntax--"});
+		const html = highlighter.highlightSync({filePath, scopePrefix: config.oldPasteThemeCompatibility ? "" : "syntax--"});
 
 		res.render("paste", {
 			paste: html,
