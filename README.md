@@ -19,7 +19,11 @@ Make a file called `config.json`, with the following properties:
     "listen": "3000",
     "fileLength": 4,
     "pasteThemePath": "http://atom.github.io/highlights/examples/atom-dark.css",
-    "sessionSecret": ""
+    "oldPasteThemeCompatibility": true,
+    "sessionSecret": "",
+    "languagePackages": [
+      "language-lua"
+    ]
 }
 ```
 - `logo` - Filename of your logo image. Make sure to put this in /public.
