@@ -35,6 +35,17 @@ if (!config.sessionSecret) {
 	process.exit(0);
 }
 
+if (config.languagePackages.length > 0) {
+  for (var lang in config.languagePackages) {
+    try {
+      let pkg = require.resolve(`${lang}/package.json`);
+      highlighter.requireGrammarsSync(pkg);
+    } catch (e) {
+      console.log(`Could not find/load language package ${lang}`)
+    }
+  }
+} 
+
 app.engine(".hbs", handlebars({ defaultLayout: "main", extname: ".hbs", helpers: _.merge(helpers, { "dateformat" : dateformat }) }));
 app.set("view engine", ".hbs");
 app.use(express.static("public"));

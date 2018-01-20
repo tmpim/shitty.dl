@@ -34,6 +34,7 @@ Make a file called `config.json`, with the following properties:
 - `fileLength` Amount of characters in generated filenames. Default is 4.
 - `pasteThemePath` Location of a theme for the paste syntax highlighter.
 - `sessionSecret` Secret for session storage. Should be a secure random string.
+- `languagePackages` Array of npm package names containing atom language grammars.
 
 ## Notes
 

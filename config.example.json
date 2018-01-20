@@ -10,5 +10,8 @@
     "listen": "3000",
     "fileLength": 4,
     "pasteThemePath": "http://atom.github.io/highlights/examples/atom-dark.css",
-    "sessionSecret": ""
+    "sessionSecret": "",
+    "languagePackages": [
+      "language-lua"
+    ]
 }
