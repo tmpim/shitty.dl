@@ -36,7 +36,8 @@ if (!config.sessionSecret) {
 }
 
 if (config.languagePackages.length > 0) {
-  for (var lang in config.languagePackages) {
+  for (let i in config.languagePackages) {
+    let lang = config.languagePackages[i];
     try {
       let pkg = require.resolve(`${lang}/package.json`);
       highlighter.requireGrammarsSync(pkg);
