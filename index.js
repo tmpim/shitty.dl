@@ -35,16 +35,15 @@ if (!config.sessionSecret) {
 	process.exit(0);
 }
 
-if (config.languagePackages.length > 0) {
-  for (let i in config.languagePackages) {
-    let lang = config.languagePackages[i];
+if (config.languagePackages) {
+  config.languagePackages.forEach(package => {
     try {
-      let pkg = require.resolve(`${lang}/package.json`);
+      const pkg = require.resolve(`${package}/package.json`);
       highlighter.requireGrammarsSync({ modulePath: pkg });
     } catch (e) {
-      console.warn(`Could not find/load language package ${lang}`)
+      console.warn(`Could not find/load language package ${package}`)
     }
-  }
+  });
 } 
 
 app.engine(".hbs", handlebars({ defaultLayout: "main", extname: ".hbs", helpers: _.merge(helpers, { "dateformat" : dateformat }) }));
