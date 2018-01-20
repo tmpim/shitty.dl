@@ -21,7 +21,7 @@ const moment = require("moment");
 const paginator = new require("paginator")(48, 8);
 const crypto = require("crypto");
 const Highlights = require("highlights");
-const highlighter = new Highlights();
+const highlighter = new Highlights({ scopePrefix: config.oldPasteThemeCompatibility ? "" : "syntax--" });
 const sanitizeFilename = require("sanitize-filename");
 const CodeRain = require("coderain");
 const cr = new CodeRain(("#").repeat(config.fileLength || 4));
@@ -207,7 +207,7 @@ app.get("/paste/:file", (req, res) => {
 		if (!stats.isFile()) return res.status(404).send("File not found");
 		if (stats.size > 2 ** 19) return error(req, res, `File too large (${filesize(stats.size)})`);
 
-		const html = highlighter.highlightSync({filePath, scopePrefix: config.oldPasteThemeCompatibility ? "" : "syntax--"});
+		const html = highlighter.highlightSync({filePath});
 
 		res.render("paste", {
 			paste: html,
