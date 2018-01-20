@@ -40,9 +40,9 @@ if (config.languagePackages.length > 0) {
     let lang = config.languagePackages[i];
     try {
       let pkg = require.resolve(`${lang}/package.json`);
-      highlighter.requireGrammarsSync(pkg);
+      highlighter.requireGrammarsSync({ modulePath: pkg });
     } catch (e) {
-      console.log(`Could not find/load language package ${lang}`)
+      console.warn(`Could not find/load language package ${lang}`)
     }
   }
 } 
