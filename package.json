@@ -23,9 +23,11 @@
     "handlebars-helpers": "^0.8.1",
     "helper-dateformat": "^1.0.0",
     "highlights": "^3.0.1",
+    "language-lua": "^0.9.3",
     "lodash": "^4.17.4",
     "moment": "^2.20.1",
     "paginator": "^1.0.0",
-    "sanitize-filename": "^1.6.1"
+    "sanitize-filename": "^1.6.1",
+    "sqlite3": "^3.1.13"
   }
 }

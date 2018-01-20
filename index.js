@@ -21,7 +21,7 @@ const moment = require("moment");
 const paginator = new require("paginator")(48, 8);
 const crypto = require("crypto");
 const Highlights = require("highlights");
-const highlighter = new Highlights();
+const highlighter = new Highlights({ scopePrefix: config.oldPasteThemeCompatibility ? "" : "syntax--" });
 const sanitizeFilename = require("sanitize-filename");
 const CodeRain = require("coderain");
 const cr = new CodeRain(("#").repeat(config.fileLength || 4));
@@ -34,6 +34,17 @@ if (!config.sessionSecret) {
 	console.error("Please put a secure random value in config.sessionSecret");
 	process.exit(0);
 }
+
+if (config.languagePackages) {
+  config.languagePackages.forEach(package => {
+    try {
+      const pkg = require.resolve(`${package}/package.json`);
+      highlighter.requireGrammarsSync({ modulePath: pkg });
+    } catch (e) {
+      console.warn(`Could not find/load language package ${package}`)
+    }
+  });
+} 
 
 app.engine(".hbs", handlebars({ defaultLayout: "main", extname: ".hbs", helpers: _.merge(helpers, { "dateformat" : dateformat }) }));
 app.set("view engine", ".hbs");
