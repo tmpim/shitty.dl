@@ -5,4 +5,3 @@ sessions
 /imgs/
 /public/*
 !/public/poop.png
-package-lock.json
