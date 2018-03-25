@@ -149,8 +149,9 @@ app.post("/upload", (req, res) => {
 
 	if (!req.session && !req.session.auth) {
 		if (!req.body.password) return error(req, res, "No password specified.");
-		if (crypto.createHash("sha256").update(req.body.password).digest("hex") !== config.password) return error(req, res, "Incorrect password.");
 	}
+
+	if (crypto.createHash("sha256").update(req.body.password).digest("hex") !== config.password) return error(req, res, "Incorrect password.");
 
 	const file = req.files.file;
 	const ext = req.query.ext ? sanitizeFilename(req.query.ext) : path.extname(file.filename);
