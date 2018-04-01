@@ -11,7 +11,7 @@
 			<div class="ui content">
 				<div class="ui vertical menu fluid">
 					{{#each files}}
-						<a href="/{{name}}" class="item">
+						<a href="{{@root.pathname}}{{name}}" class="item">
 							<div class="content">
 								{{name}}
 								<span class="right floated">{{fileSize size}} - {{dateformat mtime}}</span>

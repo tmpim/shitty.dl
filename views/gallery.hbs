@@ -11,9 +11,9 @@
 			<div class="ui content">
 				<div class="ui link eight doubling cards">
 					{{#each files}}
-						<a href="/{{name}}" class="card">
+						<a href="{{@root.pathname}}{{name}}" class="card">
 							<div class="image">
-								<img class="lazy" data-original="/{{name}}">
+								<img class="lazy" data-original="{{@root.pathname}}{{name}}">
 							</div>
 							<div class="extra content">
 								{{fileSize size}}

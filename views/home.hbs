@@ -2,13 +2,13 @@
 	<div class="column">
 		<div class="ui centered brown card">
 			<div class="ui content center aligned icon">
-				<img class="icon" src="/{{ config.logo }}">
+				<img class="icon" src="{{pathname}}{{ config.logo }}">
 				<div class="header" style="color: {{ config.name_color }} !important; font-size: 175%">{{ config.name }}</div>
 			</div>
 			<p class="ui content text" style="font-size: 120%">
 				{{ config.title }}
 			</p>
-			<form class="ui content" action="/login" method="post">
+			<form class="ui content" action="{{pathname}}login" method="post">
 				{{#if authed}}
 					{{> navigation }}
 				{{else}}

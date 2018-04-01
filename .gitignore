@@ -5,3 +5,4 @@ sessions
 /imgs/
 /public/*
 !/public/poop.png
+!/public/jquery.mobile.custom.min.js

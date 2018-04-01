@@ -24,6 +24,7 @@
 <body>
 {{{body}}}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script src="{{pathname}}jquery.mobile.custom.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.9/semantic.min.js"></script>
 <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI-Calendar/76959c6f7d33a527b49be76789e984a0a407350b/dist/calendar.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qs/6.5.1/qs.min.js"></script>
@@ -74,6 +75,71 @@
 		$("#filter-clear").click(function() {
 			location.search = "";
 		});
+
+		$( "div.ui.grid" ).on( "swiperight", function(e){
+			if ($("a.ui.icon.button").not(".right").not(".disabled").length) { $("a.ui.icon.button").not(".right").not(".disabled")[0].click() }
+			else if ($(".ui.button.active").prev().length) { $(".ui.button.active").prev()[0].click() }
+		});
+		$( "div.ui.grid" ).on( "swipeleft", function(){
+			if ($("a.ui.right.icon.button").not(".disabled").length) { $("a.ui.right.icon.button").not(".disabled")[0].click() }
+			else if ($(".ui.button.active").next().length) { $(".ui.button.active").next()[0].click() }
+		});
+
+		if ( $(".ui.file.input").length ) {
+			function SubmitData(file) {
+				var formData = new FormData( );
+				formData.append("file",file);
+				formData.append("name",$("input:text").eq(1).val());
+				$.ajax({
+				url: "{{pathname}}upload",
+				data: formData,
+				processData: false,
+				contentType: false,
+				type: 'POST',
+				success: function(result){
+					console.log(result) ;
+					if (result.ok){ window.location.href = result.url ;}
+					else { alert(result.error); window.location.reload()}
+				},
+				error: function(xhr, textStatus, errorThrown){
+					alert(errorThrown); window.location.reload();
+				}
+				});
+
+			};
+
+			$(".ui.fluid.button").on("click", function() {
+				$(".ui.fluid.button").addClass('loading')
+			});
+
+			$( document ).on('drag dragstart dragend dragover dragenter dragleave drop', function(e) {
+				e.preventDefault();
+				e.stopPropagation();
+			})
+			.on('dragover dragenter', function() {
+				$(".ui.fluid.button").removeClass('primary').addClass('secondary').html("Drop to upload");
+				$(".ui.basic.form.segment.left.aligned").children(":first").addClass('disabled');
+			})
+			.on('dragleave dragend', function() {
+				$(".ui.fluid.button").removeClass('secondary').addClass('primary').html("Submit");
+				$(".ui.basic.form.segment.left.aligned").children(":first").removeClass('disabled');
+			})
+			.on('drop', function(e) {
+				$("input:file", ".ui.file.input").parent().children(":first").val("Droped File");
+				$(".ui.fluid.button").addClass('loading')
+				SubmitData(e.originalEvent.dataTransfer.files.item(0));
+			})
+			.on("paste", function(e){
+				var pastedData = e.originalEvent.clipboardData.items[0];
+				if (pastedData.kind === 'file') {
+					$(".ui.fluid.button").removeClass('primary').addClass('secondary').addClass('loading')
+					$(".ui.basic.form.segment.left.aligned").children(":first").addClass('disabled');
+					$("input:file", ".ui.file.input").parent().children(":first").val("Pasted File");
+					SubmitData(pastedData.getAsFile());
+				}
+			});
+		}
+
 	});
 </script>
 </body>
