@@ -87,7 +87,9 @@
 
 		if ( $(".ui.file.input").length ) {
 			function SubmitData(file) {
-				var formData = new FormData( );
+				$(".ui.fluid.button").addClass('loading').addClass('disabled');
+				var progress = $('#progress').progress().progress("set percent",0);
+				var formData = new FormData(); 
 				formData.append("file",file);
 				formData.append("name",$("input:text").eq(1).val());
 				$.ajax({
@@ -96,20 +98,29 @@
 				processData: false,
 				contentType: false,
 				type: 'POST',
+				xhr: function(){
+					var xhr = new window.XMLHttpRequest();
+					function HandlePrecent(evt) {if (evt.lengthComputable) { progress.progress("set percent",evt.loaded / evt.total * 100); } }
+					xhr.upload.addEventListener("progress", HandlePrecent, false);
+					xhr.addEventListener("progress", HandlePrecent, false);
+					return xhr;
+				},
 				success: function(result){
 					console.log(result) ;
 					if (result.ok){ window.location.href = result.url ;}
 					else { alert(result.error); window.location.reload()}
 				},
 				error: function(xhr, textStatus, errorThrown){
-					alert(errorThrown); window.location.reload();
+					alert("Error Uploading: " + errorThrown); window.location.reload();
 				}
 				});
 
 			};
 
-			$(".ui.fluid.button").on("click", function() {
-				$(".ui.fluid.button").addClass('loading')
+			$(".ui.fluid.button").on("click", function(e) {
+				e.preventDefault();
+				e.stopPropagation();
+				SubmitData( $("input:file", ".ui.file.input")[0].files.item(0) );
 			});
 
 			$( document ).on('drag dragstart dragend dragover dragenter dragleave drop', function(e) {
@@ -125,14 +136,15 @@
 				$(".ui.basic.form.segment.left.aligned").children(":first").removeClass('disabled');
 			})
 			.on('drop', function(e) {
+				$(".ui.fluid.button").removeClass('secondary').addClass('primary').html("Submit");
 				$("input:file", ".ui.file.input").parent().children(":first").val("Droped File");
-				$(".ui.fluid.button").addClass('loading')
 				SubmitData(e.originalEvent.dataTransfer.files.item(0));
 			})
 			.on("paste", function(e){
 				var pastedData = e.originalEvent.clipboardData.items[0];
 				if (pastedData.kind === 'file') {
-					$(".ui.fluid.button").removeClass('primary').addClass('secondary').addClass('loading')
+					e.preventDefault();
+					e.stopPropagation();
 					$(".ui.basic.form.segment.left.aligned").children(":first").addClass('disabled');
 					$("input:file", ".ui.file.input").parent().children(":first").val("Pasted File");
 					SubmitData(pastedData.getAsFile());
