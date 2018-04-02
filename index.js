@@ -8,6 +8,7 @@ const url = require("url");
 const util = require("util");
 
 const express = require("express");
+const router = express.Router();
 const bb = require("express-busboy");
 const handlebars = require("express-handlebars");
 const promBundle = require("express-prom-bundle");
@@ -28,9 +29,13 @@ const cr = new CodeRain(("#").repeat(config.fileLength || 4));
 const filesize = require("filesize");
 
 const app = express();
-const statCache = {};
+let statCache = {};
 
-const pathname = new url.URL(config.url).pathname;
+if (fs.existsSync("stats.json")) {
+	statCache = JSON.parse(fs.readFileSync("stats.json"));
+}
+
+const pathname = new url.URL(config.url).pathname.replace(/\/?$/, "/");
 
 if (!config.sessionSecret) {
 	console.error("Please put a secure random value in config.sessionSecret");
@@ -50,8 +55,6 @@ if (config.languagePackages) {
 
 app.engine(".hbs", handlebars({ defaultLayout: "main", extname: ".hbs", helpers: _.merge(helpers, { "dateformat" : dateformat }) }));
 app.set("view engine", ".hbs");
-app.use(pathname, express.static("public"));
-app.use(pathname, express.static(config.imagePath));
 app.use(session({
 	secret: config.sessionSecret,
 	cookie: {},
@@ -114,14 +117,6 @@ app.use(promBundle({
 	}
 }));
 
-app.get([pathname, pathname+"home"], (req, res) => {
-	res.render("home", {
-		config: _.omit(config, ["password", "sessionSecret"]),
-		authed: req.session && req.session.authed,
-		pathname
-	});
-});
-
 function auth(req, res, next) {
 	if (!req.session || !req.session.authed) {
 		return res.redirect(pathname);
@@ -130,7 +125,18 @@ function auth(req, res, next) {
 	next();
 }
 
-app.post(pathname+"login", (req, res) => {
+router.use(express.static("public"));
+router.use(express.static(config.imagePath));
+
+router.get(["/", "/home"], (req, res) => {
+	res.render("home", {
+		config: _.omit(config, ["password", "sessionSecret"]),
+		authed: req.session && req.session.authed,
+		pathname
+	});
+});
+
+router.post("/login", (req, res) => {
 	if (!req.body.password) return error(req, res, "No password specified.");
 	if (crypto.createHash("sha256").update(req.body.password).digest("hex") !== config.password) return error(req, res, "Incorrect password.");
 
@@ -140,7 +146,7 @@ app.post(pathname+"login", (req, res) => {
 	res.redirect(pathname+"gallery");
 });
 
-app.get(pathname+"upload", auth, (req, res) => {
+router.get("/upload", auth, (req, res) => {
 	res.render("upload", {
 		config: _.omit(config, ["password", "sessionSecret"]),
 		pageTemplate: "upload",
@@ -148,7 +154,7 @@ app.get(pathname+"upload", auth, (req, res) => {
 	});
 });
 
-app.post(pathname+"upload", (req, res) => {
+router.post("/upload", (req, res) => {
 	if (!req.files || !req.files.file) return error(req, res, "No file specified.");
 
 	if (!req.session || !req.session.authed) {
@@ -190,13 +196,13 @@ app.post(pathname+"upload", (req, res) => {
 		} else {
 			res.json({
 				ok: true,
-				url: `${config.url}${name}${ext}`
+				url: `${config.url.replace(/\/?$/, "/")}${name}${ext}`
 			});
 		}
 	});
 });
 
-app.get(pathname+"paste/:file", (req, res) => {
+router.get("/paste/:file", (req, res) => {
 	const filename = sanitizeFilename(req.params.file);
 	const filePath = path.join(config.imagePath, filename);
 
@@ -205,7 +211,7 @@ app.get(pathname+"paste/:file", (req, res) => {
 	try {
 		const stats = fs.statSync(filePath);
 
-    console.log(stats);
+        console.log(stats);
 
 		if (!stats.isFile()) return res.status(404).send("File not found");
 		if (stats.size > 2 ** 19) return error(req, res, `File too large (${filesize(stats.size)})`);
@@ -242,6 +248,8 @@ function fileListing(mask, pageTemplate, route, req, res) {
 	const fullFiles = _.reverse(_.sortBy(_.map(files, f => {
 		if (statCache[f]) return statCache[f];
 
+		console.log(f);
+
 		const stat = fs.statSync(`${f}`);
 		const o = {
 			name: path.relative(config.imagePath, f),
@@ -254,6 +262,8 @@ function fileListing(mask, pageTemplate, route, req, res) {
 		return o;
 	}), "mtime"));
 
+	fs.writeFile("stats.json", JSON.stringify(statCache), () => {});
+
 	res.render(pageTemplate, {
 		route,
 		pageTemplate,
@@ -265,7 +275,10 @@ function fileListing(mask, pageTemplate, route, req, res) {
 	});
 }
 
-app.get(pathname+"gallery/:page?", auth, (req, res) => fileListing("*.<(jpeg|jpg|png|gif)$>", "gallery", pathname+"gallery", req, res));
-app.get(pathname+"list/:page?", auth, (req, res) => fileListing("*.*", "list", pathname+"list", req, res));
+router.get("/gallery/:page?", auth, (req, res) => fileListing("*.<(jpeg|jpg|png|gif)$>", "gallery", pathname+"gallery", req, res));
+router.get("/list/:page?", auth, (req, res) => fileListing("*.*", "list", pathname+"list", req, res));
 
+console.log(`Listening on ${config.listen} under path ${pathname}`);
+
+app.use(pathname, router);
 app.listen(config.listen);

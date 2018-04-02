@@ -88,7 +88,7 @@
 		if ( $(".ui.file.input").length ) {
 			function SubmitData(file) {
 				$(".ui.fluid.button").addClass('loading').addClass('disabled');
-				var progress = $('#progress').progress().progress("set percent",0);
+				var progress = $('#progress').show().progress().progress("set percent",0);
 				var formData = new FormData(); 
 				formData.append("file",file);
 				formData.append("name",$("input:text").eq(1).val());

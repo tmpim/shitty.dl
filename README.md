@@ -18,7 +18,7 @@ Make a file called `config.json`, with the following properties:
     "url": "https://your.host/",
     "listen": "3000",
     "fileLength": 4,
-    "pasteThemePath": "http://atom.github.io/highlights/examples/atom-dark.css",
+    "pasteThemePath": "https://atom.github.io/highlights/examples/atom-dark.css",
     "oldPasteThemeCompatibility": true,
     "sessionSecret": "",
     "languagePackages": [
@@ -43,4 +43,5 @@ Make a file called `config.json`, with the following properties:
 
 ## Notes
 
-Ensure that the user you run the shitty.dl process as has write permissions to `imagePath`.
+* Ensure that the user you run the shitty.dl process as has write permissions to `imagePath`.
+* Make sure your paste theme has the same scheme as your site - i.e. if your site is HTTPS, the theme must be HTTPS too.
