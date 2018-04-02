@@ -30,6 +30,8 @@ const filesize = require("filesize");
 const app = express();
 const statCache = {};
 
+const pathname = new url.URL(config.url).pathname;
+
 if (!config.sessionSecret) {
 	console.error("Please put a secure random value in config.sessionSecret");
 	process.exit(0);
@@ -48,8 +50,8 @@ if (config.languagePackages) {
 
 app.engine(".hbs", handlebars({ defaultLayout: "main", extname: ".hbs", helpers: _.merge(helpers, { "dateformat" : dateformat }) }));
 app.set("view engine", ".hbs");
-app.use(express.static("public"));
-app.use(express.static(config.imagePath));
+app.use(pathname, express.static("public"));
+app.use(pathname, express.static(config.imagePath));
 app.use(session({
 	secret: config.sessionSecret,
 	cookie: {},
@@ -112,39 +114,41 @@ app.use(promBundle({
 	}
 }));
 
-app.get(["/", "/home"], (req, res) => {
+app.get([pathname, pathname+"home"], (req, res) => {
 	res.render("home", {
 		config: _.omit(config, ["password", "sessionSecret"]),
-		authed: req.session && req.session.authed
+		authed: req.session && req.session.authed,
+		pathname
 	});
 });
 
 function auth(req, res, next) {
 	if (!req.session || !req.session.authed) {
-		return res.redirect("/");
+		return res.redirect(pathname);
 	}
 
 	next();
 }
 
-app.post("/login", (req, res) => {
+app.post(pathname+"login", (req, res) => {
 	if (!req.body.password) return error(req, res, "No password specified.");
 	if (crypto.createHash("sha256").update(req.body.password).digest("hex") !== config.password) return error(req, res, "Incorrect password.");
 
 	req.session.authed = true;
 	req.session.save();
 
-	res.redirect("/gallery");
+	res.redirect(pathname+"gallery");
 });
 
-app.get("/upload", auth, (req, res) => {
+app.get(pathname+"upload", auth, (req, res) => {
 	res.render("upload", {
 		config: _.omit(config, ["password", "sessionSecret"]),
-		route: "upload"
+		pageTemplate: "upload",
+		pathname
 	});
 });
 
-app.post("/upload", (req, res) => {
+app.post(pathname+"upload", (req, res) => {
 	if (!req.files || !req.files.file) return error(req, res, "No file specified.");
 
 	if (!req.session || !req.session.authed) {
@@ -192,7 +196,7 @@ app.post("/upload", (req, res) => {
 	});
 });
 
-app.get("/paste/:file", (req, res) => {
+app.get(pathname+"paste/:file", (req, res) => {
 	const filename = sanitizeFilename(req.params.file);
 	const filePath = path.join(config.imagePath, filename);
 
@@ -212,6 +216,7 @@ app.get("/paste/:file", (req, res) => {
 			paste: html,
 			style: config.pasteThemePath || "https://atom.github.io/highlights/examples/atom-dark.css",
 			name: filename,
+			pathname,
 			layout: false
 		});
 	} catch (err) {
@@ -251,14 +256,16 @@ function fileListing(mask, pageTemplate, route, req, res) {
 
 	res.render(pageTemplate, {
 		route,
+		pageTemplate,
 		query: url.parse(req.url).query,
 		paginationInfo,
 		pages: _.range(paginationInfo.first_page, paginationInfo.last_page + 1),
-		files: _.slice(fullFiles, paginationInfo.first_result, paginationInfo.last_result + 1)
+		files: _.slice(fullFiles, paginationInfo.first_result, paginationInfo.last_result + 1),
+		pathname
 	});
 }
 
-app.get("/gallery/:page?", auth, (req, res) => fileListing("*.<(jpeg|jpg|png|gif)$>", "gallery", "gallery", req, res));
-app.get("/list/:page?", auth, (req, res) => fileListing("*.*", "list", "list", req, res));
+app.get(pathname+"gallery/:page?", auth, (req, res) => fileListing("*.<(jpeg|jpg|png|gif)$>", "gallery", pathname+"gallery", req, res));
+app.get(pathname+"list/:page?", auth, (req, res) => fileListing("*.*", "list", pathname+"list", req, res));
 
 app.listen(config.listen);

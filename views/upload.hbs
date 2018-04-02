@@ -2,16 +2,16 @@
 	<div class="column">
 		<div class="ui centered brown card">
 			<div class="ui content center aligned icon">
-				<img class="icon" src="/{{ config.logo }}">
+				<img class="icon" src="{{pathname}}{{ config.logo }}">
 				<div class="header" style="color: {{ config.name_color }} !important; font-size: 175%">{{ config.name }}</div>
 			</div>
 			<div class="ui content center aligned">
 				{{> navigation }}
 			</div>
 			<div class="ui content text">
-				<form class="ui basic form segment left aligned" action="/upload" method="post" enctype="multipart/form-data">
+				<form class="ui basic form segment left aligned" action="{{pathname}}upload" method="post" enctype="multipart/form-data">
 					<div class="field">
-						<label for="ffile">File</label>
+						<label for="ffile">Choose, drop or paste file</label>
 						<div class="ui fluid file input action">
 							<input type="text" readonly placeholder="File">
 							<input type="file" id="ffile" name="file" autocomplete="off">
@@ -26,6 +26,11 @@
 					</div>
 					<input type="hidden" name="online" value="yes">
 					<button class="ui fluid primary button" type="submit">Submit</button>
+					<div class="ui indicating progress" id="progress">
+						<div class="bar">
+							<div class="progress"></div>
+						</div>
+					</div>
 				</form>
 			</div>
 		</div>

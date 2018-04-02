@@ -1,5 +1,5 @@
 <div class="ui three basic buttons" style="max-width: 400px">
-	<a href="/gallery" class="ui button {{#eq route "gallery"}}active{{/eq}}">Gallery</a>
-	<a href="/list" class="ui button {{#eq route "list"}}active{{/eq}}">List</a>
-	<a href="/upload" class="ui button {{#eq route "upload"}}active{{/eq}}">Upload</a>
+	<a href="{{pathname}}gallery" class="ui button {{#eq pageTemplate "gallery"}}active{{/eq}}">Gallery</a>
+	<a href="{{pathname}}list" class="ui button {{#eq pageTemplate "list"}}active{{/eq}}">List</a>
+	<a href="{{pathname}}upload" class="ui button {{#eq pageTemplate "upload"}}active{{/eq}}">Upload</a>
 </div>
