@@ -31,6 +31,9 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery_lazyload/1.9.7/jquery.lazyload.min.js"></script>
 <script>
 	$(function() {
+
+		var urlParams = new URLSearchParams(location.search);
+
 		$("img.lazy").lazyload({
 			effect: "fadeIn"
 		});
@@ -64,11 +67,13 @@
 
 		$(".ui.accordion").accordion();
 
+		$("#filter-extensions").val(urlParams.get('extensions'));
+
 		$("#filter-submit").click(function() {
 			const q = Qs.parse(location.search.replace(/^\?/, ""));
 			q.start = $("#rangestart").calendar("get date");
 			q.end = $("#rangeend").calendar("get date");
-			q.extensions = encodeURIComponent($("#filter-extensions").val());
+			q.extensions = $("#filter-extensions").val();
 			location.search = Qs.stringify(q);
 		});
 
