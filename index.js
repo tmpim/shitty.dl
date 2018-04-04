@@ -33,6 +33,11 @@ let statCache = {};
 
 if (fs.existsSync("stats.json")) {
 	statCache = JSON.parse(fs.readFileSync("stats.json"));
+	for (var key in statCache) {
+		if (!statCache.hasOwnProperty(key)) continue;
+		if (!key.mtimeSave) {delete statCache[key]; continue;};
+		key.mtime = new Date(key.mtimeSave);
+	};
 }
 
 const pathname = new url.URL(config.url).pathname.replace(/\/?$/, "/");
@@ -155,14 +160,14 @@ router.get("/upload", auth, (req, res) => {
 });
 
 router.post("/upload", (req, res) => {
-	if ( typeof req.query.link === "undefined" && (!req.files || !req.files.file)) return error(req, res, "No file/URL specified.");
+	if ( typeof req.body.link === "undefined" && (!req.files || !req.files.file)) return error(req, res, "No file/URL specified.");
 
 	if (!req.session || !req.session.authed) {
 		if (!req.body.password) return error(req, res, "No password specified.");
 		if (crypto.createHash("sha256").update(req.body.password).digest("hex") !== config.password) return error(req, res, "Incorrect password.");
 	}
 
-	const ext = req.query.link ? "" : req.query.ext ? sanitizeFilename(req.query.ext) : path.extname(req.files.file.filename);
+	const ext = req.body.link ? "" : req.query.ext ? sanitizeFilename(req.query.ext) : path.extname(req.files.file.filename);
 
 	if (ext.toLowerCase() === ".php") return error(req, res, "Disallowed file type.");
 
@@ -183,8 +188,8 @@ router.post("/upload", (req, res) => {
 		}
 	} while (fs.existsSync(`${config.imagePath}/${name}${ext}`));
 
-	if (typeof req.query.link !== "undefined") {
-		fs.writeFile( `${config.imagePath}/${name}` , req.query.link, (err) => {
+	if ( req.body.link ) {
+		fs.writeFile( `${config.imagePath}/${name}` , req.body.link, (err) => {
 			if (err) return console.log(JSON.stringify(err));
 			name = "l/" + name; 
 			res.json({
@@ -267,8 +272,8 @@ function fileListing(mask, pageTemplate, route, req, res) {
 	}
 
 	const finder = Finder.from(config.imagePath);
-	if (req.query.start) finder.date(">", moment(req.query.start).set({hours: 0, minutes: 0, seconds: 0, milliseconds: 0}).toISOString());
-	if (req.query.end) finder.date("<", moment(req.query.end).set({hours: 0, minutes: 0, seconds: 0, milliseconds: 0}).add(1, "day").toISOString());
+	if (req.query.start) finder.date(">", moment(new Date(req.query.start)).set({hours: 0, minutes: 0, seconds: 0, milliseconds: 0}).toISOString());
+	if (req.query.end) finder.date("<", moment(new Date(req.query.end)).set({hours: 0, minutes: 0, seconds: 0, milliseconds: 0}).add(1, "day").toISOString());
 	const files = finder.findFiles(mask);
 
 	let page = typeof req.params.page !== "undefined" ? parseInt(req.params.page) : 0;
@@ -286,6 +291,7 @@ function fileListing(mask, pageTemplate, route, req, res) {
 			name: path.relative(config.imagePath, f),
 			size: stat.size,
 			mtime: stat.mtime,
+			mtimeSave: stat.mtime.toString(),
 			c: (pageTemplate == "links" ? fs.readFileSync(`${f}`, { encoding: "utf8" }).trim() : undefined) /* undefined is not saved into JSON */
 		};
 

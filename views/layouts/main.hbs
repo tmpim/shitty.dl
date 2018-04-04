@@ -32,7 +32,7 @@
 <script>
 	$(function() {
 
-		var urlParams = new URLSearchParams(location.search);
+		var urlParams = typeof URLSearchParams === "function" ? new URLSearchParams(location.search) : { get: function() { return undefined; } }
 
 		$("img.lazy").lazyload({
 			effect: "fadeIn"
@@ -58,12 +58,12 @@
 		$("#rangestart").calendar({
 			type: "date",
 			endCalendar: $("#rangeend")
-		});
+		}).calendar("set date",urlParams.get('start'));
 
 		$("#rangeend").calendar({
 			type: "date",
 			startCalendar: $("#rangestart")
-		});
+		}).calendar("set date",urlParams.get('end'));
 
 		$(".ui.accordion").accordion();
 
@@ -71,8 +71,8 @@
 
 		$("#filter-submit").click(function() {
 			const q = Qs.parse(location.search.replace(/^\?/, ""));
-			q.start = $("#rangestart").calendar("get date");
-			q.end = $("#rangeend").calendar("get date");
+			q.start = $("#rangestart").calendar("get date").toString();
+			q.end = $("#rangeend").calendar("get date").toString();
 			q.extensions = $("#filter-extensions").val();
 			location.search = Qs.stringify(q);
 		});
@@ -133,7 +133,7 @@
 					
 				}
 				else {
-					urlQuery = "{{pathname}}upload?"+$.param({ link : $('#URL').val() });
+					formData.append("link",$('#URL').val());
 				};
 				$.ajax({
 				url: urlQuery,
