@@ -71,8 +71,8 @@
 
 		$("#filter-submit").click(function() {
 			const q = Qs.parse(location.search.replace(/^\?/, ""));
-			q.start = $("#rangestart").calendar("get date").toString();
-			q.end = $("#rangeend").calendar("get date").toString();
+			if ($("#rangestart").calendar("get date")) q.start = $("#rangestart").calendar("get date").toString();
+			if ($("#rangeend").calendar("get date")) q.end = $("#rangeend").calendar("get date").toString();
 			q.extensions = $("#filter-extensions").val();
 			location.search = Qs.stringify(q);
 		});
