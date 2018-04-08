@@ -33,6 +33,11 @@ let statCache = {};
 
 if (fs.existsSync("stats.json")) {
 	statCache = JSON.parse(fs.readFileSync("stats.json"));
+	for (var key in statCache) {
+		if (!statCache.hasOwnProperty(key)) continue;
+		if (!key.mtimeSave) {delete statCache[key]; continue;};
+		key.mtime = new Date(key.mtimeSave);
+	};
 }
 
 const pathname = new url.URL(config.url).pathname.replace(/\/?$/, "/");
@@ -155,15 +160,14 @@ router.get("/upload", auth, (req, res) => {
 });
 
 router.post("/upload", (req, res) => {
-	if (!req.files || !req.files.file) return error(req, res, "No file specified.");
+	if ( typeof req.body.link === "undefined" && (!req.files || !req.files.file)) return error(req, res, "No file/URL specified.");
 
 	if (!req.session || !req.session.authed) {
 		if (!req.body.password) return error(req, res, "No password specified.");
 		if (crypto.createHash("sha256").update(req.body.password).digest("hex") !== config.password) return error(req, res, "Incorrect password.");
 	}
 
-	const file = req.files.file;
-	const ext = req.query.ext ? sanitizeFilename(req.query.ext) : path.extname(file.filename);
+	const ext = req.body.link ? "" : req.query.ext ? sanitizeFilename(req.query.ext) : path.extname(req.files.file.filename);
 
 	if (ext.toLowerCase() === ".php") return error(req, res, "Disallowed file type.");
 
@@ -184,22 +188,34 @@ router.post("/upload", (req, res) => {
 		}
 	} while (fs.existsSync(`${config.imagePath}/${name}${ext}`));
 
-	moveFile(file.file, `${config.imagePath}/${name}${ext}`, err => {
-		if (err) return console.log(JSON.stringify(err));
-
-		if (typeof req.query.paste !== "undefined") {
-			name = "paste/" + name;
-		}
-
-		if (req.body.online === "yes") {
-			res.redirect(`${config.url}${name}${ext}`);
-		} else {
+	if ( req.body.link ) {
+		fs.writeFile( `${config.imagePath}/${name}` , req.body.link, (err) => {
+			if (err) return console.log(JSON.stringify(err));
+			name = "l/" + name; 
 			res.json({
 				ok: true,
-				url: `${config.url.replace(/\/?$/, "/")}${name}${ext}`
+				url: `${config.url.replace(/\/?$/, "/")}${name}`
 			});
-		}
-	});
+		});
+	}
+	else {
+		moveFile( req.files.file.file, `${config.imagePath}/${name}${ext}`, err => {
+			if (err) return console.log(JSON.stringify(err));
+
+			if (typeof req.query.paste !== "undefined") {
+				name = "paste/" + name;
+			}
+
+			if (req.body.online === "yes") {
+				res.redirect(`${config.url}${name}${ext}`);
+			} else {
+				res.json({
+					ok: true,
+					url: `${config.url.replace(/\/?$/, "/")}${name}${ext}`
+				});
+			}
+		});
+	}
 });
 
 router.get("/paste/:file", (req, res) => {
@@ -211,7 +227,7 @@ router.get("/paste/:file", (req, res) => {
 	try {
 		const stats = fs.statSync(filePath);
 
-        console.log(stats);
+		console.log(stats);
 
 		if (!stats.isFile()) return res.status(404).send("File not found");
 		if (stats.size > 2 ** 19) return error(req, res, `File too large (${filesize(stats.size)})`);
@@ -230,14 +246,35 @@ router.get("/paste/:file", (req, res) => {
 	}
 });
 
+router.get("/l/:file", (req, res) => {
+	const filename = sanitizeFilename(req.params.file);
+	const filePath = path.join(config.imagePath, filename);
+
+	if (!filePath) return res.status(404).send("File not found");
+	if (path.extname(filePath)) return error(req, res, "URL not valid");
+	
+	try {
+		const stats = fs.statSync(filePath);
+
+		if (!stats.isFile()) return res.status(404).send("File not found");
+		if (stats.size > 1024) return error(req, res, `URL too large (${filesize(stats.size)})`);
+
+		res.redirect(fs.readFileSync(filePath, { encoding: "utf8" }).trim());
+
+	} catch (err) {
+		error(req, res, err);
+	}
+});
+
 function fileListing(mask, pageTemplate, route, req, res) {
 	if (req.query.extensions) {
 		mask = `*.<(${req.query.extensions.split(",").join("|")})$>`;
 	}
 
 	const finder = Finder.from(config.imagePath);
-	if (req.query.start) finder.date(">", moment(req.query.start).set({hours: 0, minutes: 0, seconds: 0, milliseconds: 0}).toISOString());
-	if (req.query.end) finder.date("<", moment(req.query.end).set({hours: 0, minutes: 0, seconds: 0, milliseconds: 0}).add(1, "day").toISOString());
+	if (req.query.start) finder.date(">", moment(new Date(req.query.start)).set({hours: 0, minutes: 0, seconds: 0, milliseconds: 0}).toISOString());
+	if (req.query.end) finder.date("<", moment(new Date(req.query.end)).set({hours: 0, minutes: 0, seconds: 0, milliseconds: 0}).add(1, "day").toISOString());
+	if (pageTemplate == "links") finder.size('<=', 1024);
 	const files = finder.findFiles(mask);
 
 	let page = typeof req.params.page !== "undefined" ? parseInt(req.params.page) : 0;
@@ -254,7 +291,9 @@ function fileListing(mask, pageTemplate, route, req, res) {
 		const o = {
 			name: path.relative(config.imagePath, f),
 			size: stat.size,
-			mtime: stat.mtime
+			mtime: stat.mtime,
+			mtimeSave: stat.mtime.toString(),
+			c: (pageTemplate == "links" ? fs.readFileSync(`${f}`, { encoding: "utf8" }).trim() : undefined) /* undefined is not saved into JSON */
 		};
 
 		statCache[f] = o;
@@ -277,6 +316,7 @@ function fileListing(mask, pageTemplate, route, req, res) {
 
 router.get("/gallery/:page?", auth, (req, res) => fileListing("*.<(jpeg|jpg|png|gif)$>", "gallery", pathname+"gallery", req, res));
 router.get("/list/:page?", auth, (req, res) => fileListing("*.*", "list", pathname+"list", req, res));
+router.get("/links/:page?", auth, (req, res) => fileListing("<^[0-9a-zA-Z/-_ ]+$>", "links", pathname+"links", req, res));
 
 console.log(`Listening on ${config.listen} under path ${pathname}`);
 

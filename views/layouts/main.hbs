@@ -31,6 +31,9 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery_lazyload/1.9.7/jquery.lazyload.min.js"></script>
 <script>
 	$(function() {
+
+		var urlParams = typeof URLSearchParams === "function" ? new URLSearchParams(location.search) : { get: function() { return undefined; } }
+
 		$("img.lazy").lazyload({
 			effect: "fadeIn"
 		});
@@ -49,32 +52,36 @@
 
 			name = name.replace(/,\s*$/, "");
 
-			$("input:text", file.parent()).val(name);
+			$("#name").val(name);
 		});
 
 		$("#rangestart").calendar({
 			type: "date",
 			endCalendar: $("#rangeend")
-		});
+		}).calendar("set date",urlParams.get('start'));
 
 		$("#rangeend").calendar({
 			type: "date",
 			startCalendar: $("#rangestart")
-		});
+		}).calendar("set date",urlParams.get('end'));
 
 		$(".ui.accordion").accordion();
 
+		$("#filter-extensions").val(urlParams.get('extensions'));
+
 		$("#filter-submit").click(function() {
 			const q = Qs.parse(location.search.replace(/^\?/, ""));
-			q.start = $("#rangestart").calendar("get date");
-			q.end = $("#rangeend").calendar("get date");
-			q.extensions = encodeURIComponent($("#filter-extensions").val());
+			if ($("#rangestart").calendar("get date")) q.start = $("#rangestart").calendar("get date").toString();
+			if ($("#rangeend").calendar("get date")) q.end = $("#rangeend").calendar("get date").toString();
+			q.extensions = $("#filter-extensions").val();
 			location.search = Qs.stringify(q);
 		});
 
 		$("#filter-clear").click(function() {
 			location.search = "";
 		});
+		
+		$.event.special.swipe.durationThreshold = 100;
 
 		$( "div.ui.grid" ).on( "swiperight", function(e){
 			if ($("a.ui.icon.button").not(".right").not(".disabled").length) { $("a.ui.icon.button").not(".right").not(".disabled")[0].click() }
@@ -84,16 +91,52 @@
 			if ($("a.ui.right.icon.button").not(".disabled").length) { $("a.ui.right.icon.button").not(".disabled")[0].click() }
 			else if ($(".ui.button.active").next().length) { $(".ui.button.active").next()[0].click() }
 		});
+		
+		$(".alertable").on( "click", function(e) {
+			e.preventDefault();
+			alert($(this)[0].href); /* This realy should be something nicer then alert. Dunno what ;p */
+		});
 
 		if ( $(".ui.file.input").length ) {
+			
+			$('.ui.dropdown').dropdown().dropdown({
+				onChange: function(value, text, selectedItem) {
+					let name = $("#name").val();
+					$(".ui.basic.form")[0].reset();
+					$("#name").val(name);
+					if (value == "Link") {
+						$('#Filefield').hide();
+						$('#URLfield').show();
+					}
+					else {
+						$('#Filefield').show();
+						$('#URLfield').hide();
+					};
+				}
+			});
+			
+			function errorMessage(err) {
+				$("body").html('<div class="ui middle aligned center aligned grid"><div class="column"><div class="ui centered green card"><div class="content"><h1 class="header" style="color: #DB2828 !important; font-size: 175%">Error</h1></div><p class="ui content text" style="font-size: 120%">'+err+'</p></div></div></div>')
+			}
+			
 			function SubmitData(file) {
 				$(".ui.fluid.button").addClass('loading').addClass('disabled');
 				var progress = $('#progress').show().progress().progress("set percent",0);
-				var formData = new FormData(); 
-				formData.append("file",file);
-				formData.append("name",$("input:text").eq(1).val());
+				var formData = new FormData();
+				formData.append("name",$("#name").val());
+				var urlQuery = "{{pathname}}upload";
+				if ($('#mode').val() != "Link") {
+					if ($('#mode').val() == "Paste") {
+						urlQuery = "{{pathname}}upload?"+$.param({ paste : 'true'});
+					}
+					formData.append("file",file);
+					
+				}
+				else {
+					formData.append("link",$('#URL').val());
+				};
 				$.ajax({
-				url: "{{pathname}}upload",
+				url: urlQuery,
 				data: formData,
 				processData: false,
 				contentType: false,
@@ -106,12 +149,18 @@
 					return xhr;
 				},
 				success: function(result){
-					console.log(result) ;
-					if (result.ok){ window.location.href = result.url ;}
-					else { alert(result.error); window.location.reload()}
+					if (result.ok){
+						if ($('#mode').val() != "Link") {
+							window.location.href = result.url ;
+						}
+						else {
+							$("body").html('<div class="ui middle aligned center aligned grid"><div class="column"><div class="ui centered green card"><div class="content"><h1 class="header" style="color: #229A33 !important; font-size: 175%">Success</h1></div><p class="ui content text" style="font-size: 120%">'+result.url+'</p></div></div></div>')
+						}
+					}
+					else { errorMessage(result.error)}
 				},
 				error: function(xhr, textStatus, errorThrown){
-					alert("Error Uploading: " + errorThrown); window.location.reload();
+					errorMessage("Error Uploading: " + errorThrown);
 				}
 				});
 
@@ -128,12 +177,17 @@
 				e.stopPropagation();
 			})
 			.on('dragover dragenter', function() {
+				if ($('#mode').val() == "Link") {
+					$('.ui.dropdown').dropdown("set selected","File");
+				}
 				$(".ui.fluid.button").removeClass('primary').addClass('secondary').html("Drop to upload");
 				$(".ui.basic.form.segment.left.aligned").children(":first").addClass('disabled');
+				$('#Filefield').addClass('disabled');
 			})
 			.on('dragleave dragend', function() {
 				$(".ui.fluid.button").removeClass('secondary').addClass('primary').html("Submit");
 				$(".ui.basic.form.segment.left.aligned").children(":first").removeClass('disabled');
+				$('#Filefield').removeClass('disabled');
 			})
 			.on('drop', function(e) {
 				$(".ui.fluid.button").removeClass('secondary').addClass('primary').html("Submit");
@@ -142,15 +196,16 @@
 			})
 			.on("paste", function(e){
 				var pastedData = e.originalEvent.clipboardData.items[0];
-				if (pastedData.kind === 'file') {
+				if ($('#mode').val() != "Link" && pastedData.kind === 'file') {
 					e.preventDefault();
 					e.stopPropagation();
 					$(".ui.basic.form.segment.left.aligned").children(":first").addClass('disabled');
 					$("input:file", ".ui.file.input").parent().children(":first").val("Pasted File");
 					SubmitData(pastedData.getAsFile());
 				}
+				
 			});
-		}
+		};
 
 	});
 </script>

@@ -1,6 +1,6 @@
 <div class="ui middle aligned center aligned grid">
 	<div class="column">
-		<div class="ui centered brown card">
+		<div class="ui fluid centered brown card" style="max-width: 350px">
 			<div class="ui content center aligned icon">
 				<img class="icon" src="{{pathname}}{{ config.logo }}">
 				<div class="header" style="color: {{ config.name_color }} !important; font-size: 175%">{{ config.name }}</div>
@@ -11,6 +11,19 @@
 			<div class="ui content text">
 				<form class="ui basic form segment left aligned" action="{{pathname}}upload" method="post" enctype="multipart/form-data">
 					<div class="field">
+						<label for="mode">Choose upload type: </label>
+						<div class="ui selection dropdown" tabindex="0">
+							<input name="mode" value="File" id="mode" type="hidden">
+							<i class="dropdown icon"></i>
+							<div class="text">File</div>
+							<div class="menu transition hidden" tabindex="-1">
+								<div class="item active selected" data-value="File">File</div>
+								<div class="item" data-value="Paste">Paste</div>
+								<div class="item" data-value="Link">Shorten URL</div>
+							</div>
+						</div>
+					</div>
+					<div class="field" id="Filefield">
 						<label for="ffile">Choose, drop or paste file</label>
 						<div class="ui fluid file input action">
 							<input type="text" readonly placeholder="File">
@@ -20,9 +33,13 @@
 							</div>
 						</div>
 					</div>
-					<div class="field">
+					<div class="field" id="URLfield" style="display: none;">
+						<label for="URL">Fully qualified URL to shorten.</label>
+						<input type="text" name="URL"  id="URL" placeholder="Fully qualified URL">
+					</div>
+					<div class="field" id="Namefield">
 						<label for="name">Custom filename (optional)</label>
-						<input type="text" name="name" placeholder="Custom filename (optional)">
+						<input type="text" name="name" id="name" placeholder="Custom filename (optional)">
 					</div>
 					<input type="hidden" name="online" value="yes">
 					<button class="ui fluid primary button" type="submit">Submit</button>
