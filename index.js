@@ -28,6 +28,9 @@ const CodeRain = require("coderain");
 const cr = new CodeRain(("#").repeat(config.fileLength || 4));
 const filesize = require("filesize");
 
+const readChunk = require('read-chunk');
+const fileType = require('file-type');
+
 const app = express();
 let statCache = {};
 
@@ -167,7 +170,14 @@ router.post("/upload", (req, res) => {
 		if (crypto.createHash("sha256").update(req.body.password).digest("hex") !== config.password) return error(req, res, "Incorrect password.");
 	}
 
-	const ext = req.body.link ? "" : req.query.ext ? sanitizeFilename(req.query.ext) : path.extname(req.files.file.filename);
+	let ext = "";
+	if ( req.body.link ) {ext = ""}
+	else if ( req.query.ext ) { ext = sanitizeFilename(req.query.ext) }
+	else if ( path.extname(req.files.file.filename) != "" ) { ext = path.extname(req.files.file.filename) }
+	else {
+		const exten = fileType(readChunk.sync( req.files.file.file , 0, 4100));
+		if (exten) ext = "." + exten.ext
+	}
 
 	if (ext.toLowerCase() === ".php") return error(req, res, "Disallowed file type.");
 
