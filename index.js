@@ -38,8 +38,8 @@ if (fs.existsSync("stats.json")) {
 	statCache = JSON.parse(fs.readFileSync("stats.json"));
 	for (var key in statCache) {
 		if (!statCache.hasOwnProperty(key)) continue;
-		if (!key.mtimeSave) {delete statCache[key]; continue;};
-		key.mtime = new Date(key.mtimeSave);
+		if (!statCache[key].mtimeSave) {delete statCache[key]; continue;}; //This code is just to load old stats.json file.
+		statCache[key].mtime = new Date(statCache[key].mtimeSave);
 	};
 }
 
@@ -303,7 +303,7 @@ function fileListing(mask, pageTemplate, route, req, res) {
 			size: stat.size,
 			mtime: stat.mtime,
 			mtimeSave: stat.mtime.toString(),
-			c: (pageTemplate == "links" ? fs.readFileSync(`${f}`, { encoding: "utf8" }).trim() : undefined) /* undefined is not saved into JSON */
+			c: (stat.size <= 1024 && path.extname(f) == "" ? fs.readFileSync(`${f}`, { encoding: "utf8" }).trim() : undefined) /* undefined is not saved into JSON */
 		};
 
 		statCache[f] = o;
@@ -325,10 +325,14 @@ function fileListing(mask, pageTemplate, route, req, res) {
 }
 
 router.get("/gallery/:page?", auth, (req, res) => fileListing("*.<(jpeg|jpg|png|gif)$>", "gallery", pathname+"gallery", req, res));
-router.get("/list/:page?", auth, (req, res) => fileListing("*.*", "list", pathname+"list", req, res));
-router.get("/links/:page?", auth, (req, res) => fileListing("<^[0-9a-zA-Z/-_ ]+$>", "links", pathname+"links", req, res));
+router.get("/list/:page?", auth, (req, res) => fileListing("*", "list", pathname+"list", req, res));
+router.get("/links/:page?", auth, (req, res) => fileListing("<^[^.]+$>", "links", pathname+"links", req, res));
 
 console.log(`Listening on ${config.listen} under path ${pathname}`);
 
 app.use(pathname, router);
+if (typeof config.listen === "string" && isNaN(config.listen)){
+	process.on("exit", () => fs.unlinkSync(config.listen));
+	if (fs.existsSync(config.listen)) fs.unlinkSync(config.listen);
+}
 app.listen(config.listen);
