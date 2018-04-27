@@ -235,22 +235,26 @@ router.get("/paste/:file", (req, res) => {
 	if (!filePath) return res.status(404).send("File not found");
 
 	try {
-		const stats = fs.statSync(filePath);
+		if (fs.existsSync(filePath)) {
+			const stats = fs.statSync(filePath);
 
-		console.log(stats);
+			console.log(stats);
 
-		if (!stats.isFile()) return res.status(404).send("File not found");
-		if (stats.size > 2 ** 19) return error(req, res, `File too large (${filesize(stats.size)})`);
+			if (!stats.isFile()) return res.status(404).send("File not found");
+			if (stats.size > 2 ** 19) return error(req, res, `File too large (${filesize(stats.size)})`);
 
-		const html = highlighter.highlightSync({filePath});
+			const html = highlighter.highlightSync({filePath});
 
-		res.render("paste", {
-			paste: html,
-			style: config.pasteThemePath || "https://atom.github.io/highlights/examples/atom-dark.css",
-			name: filename,
-			pathname,
-			layout: false
-		});
+			res.render("paste", {
+				paste: html,
+				style: config.pasteThemePath || "https://atom.github.io/highlights/examples/atom-dark.css",
+				name: filename,
+				pathname,
+				layout: false
+			});
+		} else {
+			return res.status(404).send("File not found");
+		}
 	} catch (err) {
 		error(req, res, err);
 	}
