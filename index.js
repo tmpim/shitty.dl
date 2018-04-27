@@ -264,12 +264,16 @@ router.get("/l/:file", (req, res) => {
 	if (path.extname(filePath)) return error(req, res, "URL not valid");
 	
 	try {
-		const stats = fs.statSync(filePath);
+		if (fs.existsSync(filePath)) {
+			const stats = fs.statSync(filePath);
 
-		if (!stats.isFile()) return res.status(404).send("File not found");
-		if (stats.size > 1024) return error(req, res, `URL too large (${filesize(stats.size)})`);
+			if (!stats.isFile()) return res.status(404).send("File not found");
+			if (stats.size > 1024) return error(req, res, `URL too large (${filesize(stats.size)})`);
 
-		res.redirect(fs.readFileSync(filePath, { encoding: "utf8" }).trim());
+			res.redirect(fs.readFileSync(filePath, { encoding: "utf8" }).trim());
+		} else {
+			return res.status(404).send("File not found");
+		}
 
 	} catch (err) {
 		error(req, res, err);
