@@ -163,20 +163,29 @@ router.get("/upload", auth, (req, res) => {
 });
 
 router.post("/upload", (req, res) => {
-	if ( typeof req.body.link === "undefined" && (!req.files || !req.files.file)) return error(req, res, "No file/URL specified.");
+	if ( typeof req.body.link === "undefined" && typeof req.body.file === "undefined" && (!req.files || !req.files.file)) return error(req, res, "No file/URL specified.");
 
 	if (!req.session || !req.session.authed) {
 		if (!req.body.password) return error(req, res, "No password specified.");
 		if (crypto.createHash("sha256").update(req.body.password).digest("hex") !== config.password) return error(req, res, "Incorrect password.");
 	}
-
+	
+	let file;
+	if (req.body.file) {
+		file = Buffer.from(req.body.file , 'base64');
+	}
+	
 	let ext = "";
 	if ( req.body.link ) {ext = ""}
 	else if ( req.query.ext ) { ext = sanitizeFilename(req.query.ext) }
+	else if ( file ) {
+		const exten = fileType(file);
+		if (exten) ext = "." + exten.ext;
+	}
 	else if ( path.extname(req.files.file.filename) != "" ) { ext = path.extname(req.files.file.filename) }
-	else {
+	else{
 		const exten = fileType(readChunk.sync( req.files.file.file , 0, 4100));
-		if (exten) ext = "." + exten.ext
+		if (exten) ext = "." + exten.ext;
 	}
 
 	if (ext.toLowerCase() === ".php") return error(req, res, "Disallowed file type.");
@@ -205,6 +214,15 @@ router.post("/upload", (req, res) => {
 			res.json({
 				ok: true,
 				url: `${config.url.replace(/\/?$/, "/")}${name}`
+			});
+		});
+	}
+	else if ( file ) {
+		fs.writeFile( `${config.imagePath}/${name}${ext}` , file, (err) => {
+			if (err) return console.log(JSON.stringify(err));
+			res.json({
+				ok: true,
+				url: `${config.url.replace(/\/?$/, "/")}${name}${ext}`
 			});
 		});
 	}
@@ -279,7 +297,7 @@ router.get("/l/:file", (req, res) => {
 
 function fileListing(mask, pageTemplate, route, req, res) {
 	if (req.query.search) {
-		mask = config.imagePath+`*<${req.query.search.split(",").join("|").replace(/[a-zA-Z]/g, x => {return '['+x.toLowerCase()+x.toUpperCase()+']';})}>*`;
+		mask = config.imagePath+`*<(${req.query.search.split(",").join("|").replace(/[a-zA-Z]/g, x => {return '['+x.toLowerCase()+x.toUpperCase()+']';})})>`;
 	}
 
 	const finder = Finder.from(config.imagePath);
