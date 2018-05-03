@@ -278,8 +278,8 @@ router.get("/l/:file", (req, res) => {
 });
 
 function fileListing(mask, pageTemplate, route, req, res) {
-	if (req.query.extensions) {
-		mask = `*.<(${req.query.extensions.split(",").join("|")})$>`;
+	if (req.query.search) {
+		mask = config.imagePath+`*<${req.query.search.split(",").join("|").replace(/[a-zA-Z]/g, x => {return '['+x.toLowerCase()+x.toUpperCase()+']';})}>*`;
 	}
 
 	const finder = Finder.from(config.imagePath);
