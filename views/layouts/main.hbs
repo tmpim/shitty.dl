@@ -67,13 +67,18 @@
 
 		$(".ui.accordion").accordion();
 
-		$("#filter-extensions").val(urlParams.get('extensions'));
-
+		$("#filter-search").val(urlParams.get('search'));
+		$("#filter-search").keyup(function(event) {
+			if (event.keyCode === 13) {
+				$("#filter-submit").click();
+			}
+		});
+		
 		$("#filter-submit").click(function() {
 			const q = Qs.parse(location.search.replace(/^\?/, ""));
 			if ($("#rangestart").calendar("get date")) q.start = $("#rangestart").calendar("get date").toString();
 			if ($("#rangeend").calendar("get date")) q.end = $("#rangeend").calendar("get date").toString();
-			q.extensions = $("#filter-extensions").val();
+			q.search = $("#filter-search").val();
 			location.search = Qs.stringify(q);
 		});
 
