@@ -55,6 +55,11 @@ if (!config.sessionSecret) {
 	process.exit(0);
 }
 
+if (!config.password.match(/^[0-9a-f]{64}$/i)) {
+	console.error("Password does not look like an sha256 hash: please put a hex sha256 digest in config.password");
+	process.exit(0);
+}
+
 if (config.languagePackages) {
   config.languagePackages.forEach(package => {
     try {
