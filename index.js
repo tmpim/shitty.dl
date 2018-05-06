@@ -34,6 +34,11 @@ const fileType = require('file-type');
 const app = express();
 let statCache = {};
 
+let customName;
+if (fs.existsSync("custom-name.js")) {
+	customName = require("./custom-name.js");
+}
+
 if (fs.existsSync("stats.json")) {
 	statCache = JSON.parse(fs.readFileSync("stats.json"));
 	for (var key in statCache) {
@@ -59,7 +64,7 @@ if (config.languagePackages) {
       console.warn(`Could not find/load language package ${package}`)
     }
   });
-} 
+}
 
 app.engine(".hbs", handlebars({ defaultLayout: "main", extname: ".hbs", helpers: _.merge(helpers, { "dateformat" : dateformat }) }));
 app.set("view engine", ".hbs");
@@ -169,12 +174,12 @@ router.post("/upload", (req, res) => {
 		if (!req.body.password) return error(req, res, "No password specified.");
 		if (crypto.createHash("sha256").update(req.body.password).digest("hex") !== config.password) return error(req, res, "Incorrect password.");
 	}
-	
+
 	let file;
 	if (req.body.file) {
 		file = Buffer.from(req.body.file , 'base64');
 	}
-	
+
 	let ext = "";
 	if ( req.body.link ) {ext = ""}
 	else if ( req.query.ext ) { ext = sanitizeFilename(req.query.ext) }
@@ -197,7 +202,11 @@ router.post("/upload", (req, res) => {
 		if (attempts === 0 && req.body.name && req.body.name.length > 0) {
 			name = req.body.name.replace(/[^A-Za-z0-9_\-]/g, "_");
 		} else {
-			name = cr.next();
+			if (customName) {
+				name = customName();
+			} else {
+				name = cr.next();
+			}
 		}
 
 		attempts++;
@@ -210,7 +219,7 @@ router.post("/upload", (req, res) => {
 	if ( req.body.link ) {
 		fs.writeFile( `${config.imagePath}/${name}` , req.body.link, (err) => {
 			if (err) return console.log(JSON.stringify(err));
-			name = "l/" + name; 
+			name = "l/" + name;
 			res.json({
 				ok: true,
 				url: `${config.url.replace(/\/?$/, "/")}${name}`
@@ -281,7 +290,7 @@ router.get("/l/:file", (req, res) => {
 
 	if (!filePath) return res.status(404).send("File not found");
 	if (path.extname(filePath)) return error(req, res, "URL not valid");
-	
+
 	try {
 		if (!fs.existsSync(filePath))  return res.status(404).send("File not found");
 		const stats = fs.statSync(filePath);

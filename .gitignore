@@ -3,6 +3,8 @@ node_modules/
 config.json
 stats.json
 sessions
+custom-name.js
+/*.txt
 /imgs/
 /public/*
 !/public/poop.png

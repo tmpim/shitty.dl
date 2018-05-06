@@ -41,6 +41,22 @@ Make a file called `config.json`, with the following properties:
 - `sessionSecret` Secret for session storage. Should be a secure random string.
 - `languagePackages` Array of npm package names containing atom language grammars.
 
+## Custom names
+
+You can implement your own custom naming function by creating a file called `custom-name.js` that exports a function that returns a filename. Here is an example:
+
+```js
+const _ = require("lodash");
+const fs = require("fs");
+
+const nouns = fs.readFileSync("nouns.txt").toString().split("\n");
+
+module.exports = function() {
+	const noun = _.sample(nouns);
+	return (noun.match(/^[aeiou]/i) ? "an-" : "a-") + noun;
+};
+```
+
 ## Notes
 
 * Ensure that the user you run the shitty.dl process as has write permissions to `imagePath`.
