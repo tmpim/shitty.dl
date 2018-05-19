@@ -1,3 +1,5 @@
+const version = "1.2.3";
+
 const config = require(process.argv[2] || "./config.json");
 
 const _ = require("lodash");
@@ -32,7 +34,7 @@ const readChunk = require('read-chunk');
 const fileType = require('file-type');
 
 const app = express();
-let statCache = {};
+let statCache = {version};
 
 let customName;
 if (fs.existsSync("custom-name.js")) {
@@ -41,11 +43,13 @@ if (fs.existsSync("custom-name.js")) {
 
 if (fs.existsSync("stats.json")) {
 	statCache = JSON.parse(fs.readFileSync("stats.json"));
-	for (var key in statCache) {
-		if (!statCache.hasOwnProperty(key)) continue;
-		if (!statCache[key].mtimeSave) {delete statCache[key]; continue;}; //This code is just to load old stats.json file.
-		statCache[key].mtime = new Date(statCache[key].mtimeSave);
-	};
+	if (statCache.version != version) {statCache = {version}} /* note: remember to change version every time stats.json format changes */
+	else {
+		for (var key in statCache) {
+			if (!statCache.hasOwnProperty(key) || key == "version") continue;
+			statCache[key].mtime = new Date(statCache[key].mtimeSave);
+		}
+	}
 }
 
 const pathname = new url.URL(config.url).pathname.replace(/\/?$/, "/");
@@ -331,8 +335,10 @@ function fileListing(mask, pageTemplate, route, req, res) {
 		console.log(f);
 
 		const stat = fs.statSync(`${f}`);
+		const ext = path.extname(f);
 		const o = {
 			name: path.relative(config.imagePath, f),
+			video: ( ext == ".mp4" || ext == ".webm" ? 1 : undefined), /* undefined is not saved into JSON */
 			size: stat.size,
 			mtime: stat.mtime,
 			mtimeSave: stat.mtime.toString(),
@@ -357,7 +363,7 @@ function fileListing(mask, pageTemplate, route, req, res) {
 	});
 }
 
-router.get("/gallery/:page?", auth, (req, res) => fileListing("*.<(jpeg|jpg|png|gif)$>", "gallery", pathname+"gallery", req, res));
+router.get("/gallery/:page?", auth, (req, res) => fileListing("*.<(jpeg|jpg|png|gif|mp4|webm)$>", "gallery", pathname+"gallery", req, res));
 router.get("/list/:page?", auth, (req, res) => fileListing("*", "list", pathname+"list", req, res));
 router.get("/links/:page?", auth, (req, res) => fileListing("<^[^.]+$>", "links", pathname+"links", req, res));
 

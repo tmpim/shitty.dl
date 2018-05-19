@@ -12,9 +12,13 @@
 				<div class="ui link eight doubling cards">
 					{{#each files}}
 						<a href="{{@root.pathname}}{{name}}" class="card">
+							{{#if video}}
+							<video controls playsinline loop style="max-width: 100%;max-height: 100%;display: inline-block;vertical-align: middle" preload='metadata' src="{{@root.pathname}}{{name}}"><div class="image"><img class="lazy" data-original="{{@root.pathname}}{{@root.config.logo}}"></div></video>
+							{{else}}
 							<div class="image">
 								<img class="lazy" data-original="{{@root.pathname}}{{name}}">
 							</div>
+							{{/if}}
 							<div class="extra content">
 								{{fileSize size}}
 								<span class="right floated">{{dateformat mtime}}</span>
