@@ -40,7 +40,7 @@ Make a file called `config.json`, with the following properties:
 - `pasteThemePath` Location of a theme for the paste syntax highlighter.
 - `oldPasteThemeCompatibility` Mode that enables compatibility with older Atom themes. **NOTE: For the time being, you must run `sed -i "s/atom-text-editor/.editor/g" stylesheet.css` if you aren't using an older atom theme**
 - `sessionSecret` Secret for session storage. Should be a secure random string.
-- `uploadDeleteLink` Set to `true` to include a deletion URL for files uploaded via the API.
+- `uploadDeleteLink` If set to `true`, files uploaded via the API will contain a deletion link. Else, the password or logging in will be required to delete files.
 - `languagePackages` Array of npm package names containing atom language grammars.
 
 ## Custom names
