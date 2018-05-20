@@ -236,15 +236,15 @@ router.post("/upload", (req, res) => {
 	}
 
 	let ext = "";
-	if ( req.body.link ) {ext = ""}
-	else if ( req.query.ext ) { ext = sanitizeFilename(req.query.ext) }
-	else if ( file ) {
+	if (req.body.link) ext = "";
+	else if (req.query.ext) ext = sanitizeFilename(req.query.ext);
+	else if (file) {
 		const exten = fileType(file);
 		if (exten) ext = "." + exten.ext;
 	}
-	else if ( path.extname(req.files.file.filename) != "" ) { ext = path.extname(req.files.file.filename) }
-	else{
-		const exten = fileType(readChunk.sync( req.files.file.file , 0, 4100));
+	else if (path.extname(req.files.file.filename) != "") ext = path.extname(req.files.file.filename);
+	else 
+		const exten = fileType(readChunk.sync(req.files.file.file , 0, 4100));
 		if (exten) ext = "." + exten.ext;
 	}
 
@@ -271,14 +271,14 @@ router.post("/upload", (req, res) => {
 		}
 	} while (fs.existsSync(`${config.imagePath}/${name}${ext}`));
 
-	if ( req.body.link ) {
-		fs.writeFile( `${config.imagePath}/${name}` , req.body.link, (err) => {
-			if (err) {error(req, res, "Upload Failed."); return console.log(JSON.stringify(err));}
+	if (req.body.link) {
+		fs.writeFile(`${config.imagePath}/${name}`, req.body.link, (err) => {
+			if (err) error(req, res, "Upload failed."); return console.log(JSON.stringify(err));
 			let nonce = generateNonce(`${config.imagePath}/${name}`)
 			name = "l/" + name;
 			
 			if (req.body.online === "yes") {
-				success(req, res, `Url Shortened to <a href="${config.url}${name}">"${config.url}${name}"</a>` );
+				success(req, res, `URL shortened to <a href="${config.url}${name}">"${config.url}${name}"</a>` );
 			} else {
 				res.json({
 					ok: true,
@@ -287,10 +287,9 @@ router.post("/upload", (req, res) => {
 				});
 			}
 		});
-	}
-	else if ( file ) {
-		fs.writeFile( `${config.imagePath}/${name}${ext}` , file, (err) => {
-			if (err) {error(req, res, "Upload Failed."); return console.log(JSON.stringify(err));}
+	} else if (file) {
+		fs.writeFile(`${config.imagePath}/${name}${ext}`, file, (err) => {
+			if (err) error(req, res, "Upload failed."); return console.log(JSON.stringify(err));
 			let nonce = generateNonce(`${config.imagePath}/${name}${ext}`)
 			
 			if (req.body.online === "yes") {
@@ -303,10 +302,9 @@ router.post("/upload", (req, res) => {
 				});
 			}
 		});
-	}
-	else {
-		moveFile( req.files.file.file, `${config.imagePath}/${name}${ext}`, err => {
-			if (err) {error(req, res, "Upload Failed."); return console.log(JSON.stringify(err));}
+	} else {
+		moveFile(req.files.file.file, `${config.imagePath}/${name}${ext}`, err => {
+			if (err) error(req, res, "Upload failed."); return console.log(JSON.stringify(err));
 			let nonce = generateNonce(`${config.imagePath}/${name}${ext}`)
 			
 			if (typeof req.query.paste !== "undefined") {
