@@ -107,11 +107,11 @@
 
 		$( "div.ui.grid" ).on( "swiperight", function(e){
 			if ($("a.ui.icon.button").not(".right").not(".disabled").length) { $("a.ui.icon.button").not(".right").not(".disabled")[0].click() }
-			else if ($(".ui.button.active").prev().length) { $(".ui.button.active").prev()[0].click() }
+			else if ($("a.ui.button.active").prev().length) { $("a.ui.button.active").prev()[0].click() }
 		});
 		$( "div.ui.grid" ).on( "swipeleft", function(){
 			if ($("a.ui.right.icon.button").not(".disabled").length) { $("a.ui.right.icon.button").not(".disabled")[0].click() }
-			else if ($(".ui.button.active").next().length) { $(".ui.button.active").next()[0].click() }
+			else if ($("a.ui.button.active").next().length) { $("a.ui.button.active").next()[0].click() }
 		});
 		
 		$(".alertable").on( "click", function(e) {
@@ -143,6 +143,7 @@
 			}
 			
 			function SubmitData(file) {
+				if (file == null && $('#mode').val() != "Link") return errorMessage("No file specified.");
 				$(".ui.fluid.button").addClass('loading').addClass('disabled');
 				var progress = $('#progress').show().progress().progress("set percent",0);
 				var formData = new FormData();
@@ -191,7 +192,6 @@
 			};
 
 			$(".ui.fluid.button").on("click", function(e) {
-				if ($("input:file", ".ui.file.input")[0].files.item(0) == null && $('#mode').val() != "Link") return errorMessage("No file specified.");
 				e.preventDefault();
 				e.stopPropagation();
 				SubmitData( $("input:file", ".ui.file.input")[0].files.item(0) );
@@ -230,6 +230,15 @@
 				}
 				
 			});
+		}
+		else {
+			$("div.ui.fluid.four.basic.buttons").children().last().on('drag dragstart dragend dragover dragenter dragleave drop', function(e) {
+				e.preventDefault();
+				e.stopPropagation();
+			})
+			.on('dragover dragenter', function() {
+				$("div.ui.fluid.four.basic.buttons").children().last()[0].click();
+			})
 		};
 
 	});
