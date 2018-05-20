@@ -9,16 +9,29 @@
 				{{> pagination }}
 			</div>
 			<div class="ui content">
-				<div class="ui vertical menu fluid">
-					{{#each files}}
-						<a href="{{@root.pathname}}{{name}}" class="item">
-							<div class="content">
-								{{name}}
-								<span class="right floated">{{fileSize size}} - {{dateformat mtime}}</span>
-							</div>
-						</a>
-					{{/each}}
-				</div>
+				<table class="ui fluid celled striped very compact table">
+					<thead>
+						<tr>
+							<th>Filename</th>
+							<th>Last modified</th>
+							<th>Size</th>
+							<th></th>
+						</tr>
+					</thead>
+					<tbody>
+						{{#each files}}
+							<tr>
+								<td><a href="{{@root.pathname}}{{name}}">{{name}}</a></td>
+								<td class="collapsing">{{dateformat mtime}}</td>
+								<td class="collapsing">{{fileSize size}}</td>
+								<td class="right aligned collapsing">
+									<div onclick="startRename('{{nonce}}','{{name}}')" class="ui mini button"><i class="edit icon"></i>Rename</div>
+									<div onclick="startDelete('{{nonce}}','{{name}}')" class="ui mini negative button"><i class="eraser icon"></i>Delete</div>
+								</td>
+							</tr>
+						{{/each}}
+					</tbody>
+				</table>
 			</div>
 			<div class="ui content center aligned">
 				{{> pagination }}

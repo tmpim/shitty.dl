@@ -11,15 +11,30 @@
 			<div class="ui content">
 				<div class="ui link eight doubling cards">
 					{{#each files}}
-						<a href="{{@root.pathname}}{{name}}" class="card">
-							<div class="image">
+						<div class="card">
+							{{#if video}}
+							<video controls playsinline loop class="image" style="max-width: 100%;max-height: 100%;display: inline-block;vertical-align: middle" preload='metadata' src="{{@root.pathname}}{{name}}">
+								<a href="{{@root.pathname}}{{name}}" class="image">
+									<img class="lazy" data-original="{{@root.pathname}}{{@root.config.logo}}">
+								</a>
+							</video>
+							{{else}}
+							<a href="{{@root.pathname}}{{name}}" class="image">
 								<img class="lazy" data-original="{{@root.pathname}}{{name}}">
+							</a>
+							{{/if}}
+							<div class="content">
+								<a href="{{@root.pathname}}{{name}}" class="header">{{name}}</a>
+								<div class="meta">
+									{{fileSize size}}
+									<span class="right floated">{{dateformat mtime}}</span>
+								</div>
 							</div>
 							<div class="extra content">
-								{{fileSize size}}
-								<span class="right floated">{{dateformat mtime}}</span>
+								<span onclick="startRename('{{nonce}}','{{name}}')" class="left floated mini ui button"><i class="edit icon"></i>Rename</span>
+								<span onclick="startDelete('{{nonce}}','{{name}}')" class="right floated mini negative ui button"><i class="eraser icon"></i>Delete</span>
 							</div>
-						</a>
+						</div>
 					{{/each}}
 				</div>
 			</div>
