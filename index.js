@@ -48,10 +48,10 @@ if (fs.existsSync("custom-name.js")) {
 
 if (fs.existsSync("stats.json")) {
 	statCache = JSON.parse(fs.readFileSync("stats.json"));
-	if (statCache.version != version) statCache = { version }; /* note: remember to change version every time stats.json format changes */
+	if (statCache.version !== version) statCache = { version }; /* note: remember to change version every time stats.json format changes */
 	else {
 		for (let key in statCache) {
-			if (!statCache.hasOwnProperty(key) || key == "version") continue;
+			if (!statCache.hasOwnProperty(key) || key === "version") continue;
 			statCache[key].mtime = new Date(statCache[key].mtimeSave);
 		}
 	}
@@ -86,6 +86,10 @@ if (config.languagePackages) {
       console.warn(`Could not find/load language package ${package}`)
     }
   });
+}
+
+if (!fs.existsSync(`${config.imagePath}/.deleted`)){
+    fs.mkdirSync(`${config.imagePath}/.deleted`);
 }
 
 app.engine(".hbs", handlebars({ defaultLayout: "main", extname: ".hbs", helpers: _.merge(helpers, { "dateformat" : dateformat }) }));
@@ -242,7 +246,7 @@ router.post("/upload", (req, res) => {
 		const exten = fileType(file);
 		if (exten) ext = "." + exten.ext;
 	}
-	else if (path.extname(req.files.file.filename) !== "") ext = path.extname(req.files.file.filename);
+	else if (path.extname(req.files.file.filename) !== "") {ext = path.extname(req.files.file.filename)}
 	else {
 		const exten = fileType(readChunk.sync(req.files.file.file , 0, 4100));
 		if (exten) ext = "." + exten.ext;
@@ -273,7 +277,10 @@ router.post("/upload", (req, res) => {
 
 	if (req.body.link) {
 		fs.writeFile(`${config.imagePath}/${name}`, req.body.link, (err) => {
-			if (err) error(req, res, "Upload failed."); return console.log(JSON.stringify(err));
+			if (err) {
+					   error(req, res, "Upload failed.");
+					   return console.log(JSON.stringify(err));
+			}
 			let nonce = generateNonce(`${config.imagePath}/${name}`)
 			name = "l/" + name;
 
@@ -289,7 +296,10 @@ router.post("/upload", (req, res) => {
 		});
 	} else if (file) {
 		fs.writeFile(`${config.imagePath}/${name}${ext}`, file, (err) => {
-			if (err) error(req, res, "Upload failed."); return console.log(JSON.stringify(err));
+			if (err) {
+					   error(req, res, "Upload failed.");
+					   return console.log(JSON.stringify(err));
+			}
 			let nonce = generateNonce(`${config.imagePath}/${name}${ext}`)
 
 			if (req.body.online === "yes") {
@@ -304,7 +314,10 @@ router.post("/upload", (req, res) => {
 		});
 	} else {
 		moveFile(req.files.file.file, `${config.imagePath}/${name}${ext}`, err => {
-			if (err) error(req, res, "Upload failed."); return console.log(JSON.stringify(err));
+			if (err) {
+					   error(req, res, "Upload failed.");
+					   return console.log(JSON.stringify(err));
+			}
 			let nonce = generateNonce(`${config.imagePath}/${name}${ext}`)
 
 			if (typeof req.query.paste !== "undefined") {
