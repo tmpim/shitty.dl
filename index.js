@@ -337,7 +337,7 @@ router.post("/upload", (req, res) => {
 	}
 });
 
-router.all("/delete/:nonce", auth, (req, res) => {
+router.all("/delete/:nonce", (req, res) => {
 	if (typeof req.params.nonce === "undefined" || typeof noncesLookup[req.params.nonce] === "undefined") return error(req, res, "Invalid nonce provided");
 
 	if (!config.uploadDeleteLink && ( !req.session || !req.session.authed ) ) {
