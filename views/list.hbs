@@ -21,7 +21,7 @@
 					<tbody>
 						{{#each files}}
 							<tr>
-								<td><a href="{{@root.pathname}}{{name}}">{{name}}</a></td>
+								<td><a href="{{@root.pathname}}{{name}}">{{name}}</a><a href="{{@root.pathname}}paste/{{name}}" class="right floated"><i class="code icon"></i></a></td>
 								<td class="collapsing">{{dateformat mtime}}</td>
 								<td class="collapsing">{{fileSize size}}</td>
 								<td class="right aligned collapsing">
