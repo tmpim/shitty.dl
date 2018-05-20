@@ -1,5 +1,5 @@
-const version = "1.2.4";
-
+const package = require("./package.json");
+const version = package.version;
 const config = require(process.argv[2] || "./config.json");
 
 const _ = require("lodash");
@@ -48,9 +48,9 @@ if (fs.existsSync("custom-name.js")) {
 
 if (fs.existsSync("stats.json")) {
 	statCache = JSON.parse(fs.readFileSync("stats.json"));
-	if (statCache.version != version) {statCache = {version}} /* note: remember to change version every time stats.json format changes */
+	if (statCache.version != version) statCache = { version }; /* note: remember to change version every time stats.json format changes */
 	else {
-		for (var key in statCache) {
+		for (let key in statCache) {
 			if (!statCache.hasOwnProperty(key) || key == "version") continue;
 			statCache[key].mtime = new Date(statCache[key].mtimeSave);
 		}
@@ -59,7 +59,7 @@ if (fs.existsSync("stats.json")) {
 
 if (fs.existsSync("nonces.json")) {
 	nonces = JSON.parse(fs.readFileSync("nonces.json"));
-	for (var key in nonces) {
+	for (let key in nonces) {
 		if (!nonces.hasOwnProperty(key)) continue;
 		noncesLookup[nonces[key]] = key;
 	}
@@ -166,7 +166,7 @@ function generateNonce(filePath) {
 	nonces[filePath] = nonce;
 	noncesLookup[nonce] = filePath;
 	fs.writeFile("nonces.json", JSON.stringify(nonces), () => {});
-	return nonce;	
+	return nonce;
 }
 
 function removeNonce(nonce) {
@@ -236,15 +236,15 @@ router.post("/upload", (req, res) => {
 	}
 
 	let ext = "";
-	if ( req.body.link ) {ext = ""}
-	else if ( req.query.ext ) { ext = sanitizeFilename(req.query.ext) }
-	else if ( file ) {
+	if (req.body.link) ext = "";
+	else if (req.query.ext) ext = sanitizeFilename(req.query.ext);
+	else if (file) {
 		const exten = fileType(file);
 		if (exten) ext = "." + exten.ext;
 	}
-	else if ( path.extname(req.files.file.filename) != "" ) { ext = path.extname(req.files.file.filename) }
-	else{
-		const exten = fileType(readChunk.sync( req.files.file.file , 0, 4100));
+	else if (path.extname(req.files.file.filename) !== "") ext = path.extname(req.files.file.filename);
+	else {
+		const exten = fileType(readChunk.sync(req.files.file.file , 0, 4100));
 		if (exten) ext = "." + exten.ext;
 	}
 
@@ -271,14 +271,14 @@ router.post("/upload", (req, res) => {
 		}
 	} while (fs.existsSync(`${config.imagePath}/${name}${ext}`));
 
-	if ( req.body.link ) {
-		fs.writeFile( `${config.imagePath}/${name}` , req.body.link, (err) => {
-			if (err) {error(req, res, "Upload Failed."); return console.log(JSON.stringify(err));}
+	if (req.body.link) {
+		fs.writeFile(`${config.imagePath}/${name}`, req.body.link, (err) => {
+			if (err) error(req, res, "Upload failed."); return console.log(JSON.stringify(err));
 			let nonce = generateNonce(`${config.imagePath}/${name}`)
 			name = "l/" + name;
-			
+
 			if (req.body.online === "yes") {
-				success(req, res, `Url Shortened to <a href="${config.url}${name}">"${config.url}${name}"</a>` );
+				success(req, res, `URL shortened to <a href="${config.url}${name}">"${config.url}${name}"</a>` );
 			} else {
 				res.json({
 					ok: true,
@@ -287,12 +287,11 @@ router.post("/upload", (req, res) => {
 				});
 			}
 		});
-	}
-	else if ( file ) {
-		fs.writeFile( `${config.imagePath}/${name}${ext}` , file, (err) => {
-			if (err) {error(req, res, "Upload Failed."); return console.log(JSON.stringify(err));}
+	} else if (file) {
+		fs.writeFile(`${config.imagePath}/${name}${ext}`, file, (err) => {
+			if (err) error(req, res, "Upload failed."); return console.log(JSON.stringify(err));
 			let nonce = generateNonce(`${config.imagePath}/${name}${ext}`)
-			
+
 			if (req.body.online === "yes") {
 				res.redirect(`${config.url}${name}${ext}`);
 			} else {
@@ -303,12 +302,11 @@ router.post("/upload", (req, res) => {
 				});
 			}
 		});
-	}
-	else {
-		moveFile( req.files.file.file, `${config.imagePath}/${name}${ext}`, err => {
-			if (err) {error(req, res, "Upload Failed."); return console.log(JSON.stringify(err));}
+	} else {
+		moveFile(req.files.file.file, `${config.imagePath}/${name}${ext}`, err => {
+			if (err) error(req, res, "Upload failed."); return console.log(JSON.stringify(err));
 			let nonce = generateNonce(`${config.imagePath}/${name}${ext}`)
-			
+
 			if (typeof req.query.paste !== "undefined") {
 				name = "paste/" + name;
 			}
@@ -328,17 +326,17 @@ router.post("/upload", (req, res) => {
 
 router.all("/delete/:nonce", auth, (req, res) => {
 	if (typeof req.params.nonce === "undefined" || typeof noncesLookup[req.params.nonce] === "undefined") return error(req, res, "Invalid nonce provided");
-	
+
 	if (!config.uploadDeleteLink && ( !req.session || !req.session.authed ) ) {
 		if (!req.body.password) return error(req, res, "No password specified.");
 		if (crypto.createHash("sha256").update(req.body.password).digest("hex") !== config.password) return error(req, res, "Incorrect password.");
 	}
-	
+
 	const filePath = noncesLookup[req.params.nonce];
 	const fileName = path.basename(filePath);
-	
+
 	if (!fs.existsSync(filePath)) return error(req, res, "File don't exist");
-	
+
 	moveFile( filePath , `${config.imagePath}/.deleted/${fileName}`, err => {
 		if (err) {error(req, res, "Deletion Failed."); return console.log(JSON.stringify(err));}
 		success(req, res, `File ${fileName} deleted successfuly`);
@@ -353,15 +351,15 @@ router.post("/rename", (req, res) => {
 		if (!req.body.password) return error(req, res, "No password specified.");
 		if (crypto.createHash("sha256").update(req.body.password).digest("hex") !== config.password) return error(req, res, "Incorrect password.");
 	}
-	
+
 	const filePath = noncesLookup[req.body.nonce];
 	const fileName = path.basename(filePath);
 	const name = sanitizeFilename(req.body.name);
-	
+
 	if (!fs.existsSync(filePath)) return error(req, res, "File don't exist");
-	if (fs.existsSync(`${config.imagePath}/${name}`)) return error(req, res, "Filename already in use."); 
+	if (fs.existsSync(`${config.imagePath}/${name}`)) return error(req, res, "Filename already in use.");
 	if (path.extname(name).toLowerCase() === ".php") return error(req, res, "Disallowed file type.");
-	
+
 	moveFile( filePath , `${config.imagePath}/${name}`, err => {
 		if (err) {error(req, res, "Rename Failed."); return console.log(JSON.stringify(err));}
 		generateNonce(`${config.imagePath}/${name}`)
