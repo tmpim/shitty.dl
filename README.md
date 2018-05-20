@@ -57,6 +57,8 @@ module.exports = () => {
 };
 ```
 
+More examples for custom naming functions can be found in the [examples directory](https://github.com/Lemmmy/shitty.dl/tree/master/examples).
+
 ## Notes
 
 * Ensure that the user you run the shitty.dl process as has write permissions to `imagePath`.
