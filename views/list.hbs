@@ -11,12 +11,14 @@
 			<div class="ui content">
 				<div class="ui vertical menu fluid">
 					{{#each files}}
-						<a href="{{@root.pathname}}{{name}}" class="item">
+						<div class="item">
 							<div class="content">
-								{{name}}
-								<span class="right floated">{{fileSize size}} - {{dateformat mtime}}</span>
+								<a href="{{@root.pathname}}{{name}}">{{name}}</a>
+								<span onclick="startDelete('{{nonce}}','{{name}}')" class="right floated mini negative ui button"><i class="eraser icon"></i>Delete</span>
+								<span onclick="startRename('{{nonce}}','{{name}}')" class="right floated mini ui button"><i class="edit icon"></i>Rename</span>
+								<span class="right floated"> {{fileSize size}} - {{dateformat mtime}} </span>
 							</div>
-						</a>
+						</div>
 					{{/each}}
 				</div>
 			</div>

@@ -1,4 +1,4 @@
-const version = "1.2.3";
+const version = "1.2.4";
 
 const config = require(process.argv[2] || "./config.json");
 
@@ -28,12 +28,17 @@ const highlighter = new Highlights({ scopePrefix: config.oldPasteThemeCompatibil
 const sanitizeFilename = require("sanitize-filename");
 const CodeRain = require("coderain");
 const cr = new CodeRain(("#").repeat(config.fileLength || 4));
+const crNonce = new CodeRain(("#").repeat(30));
 const filesize = require("filesize");
 
 const readChunk = require('read-chunk');
 const fileType = require('file-type');
 
 const app = express();
+
+let nonces = {};
+let noncesLookup = {};
+
 let statCache = {version};
 
 let customName;
@@ -49,6 +54,14 @@ if (fs.existsSync("stats.json")) {
 			if (!statCache.hasOwnProperty(key) || key == "version") continue;
 			statCache[key].mtime = new Date(statCache[key].mtimeSave);
 		}
+	}
+}
+
+if (fs.existsSync("nonces.json")) {
+	nonces = JSON.parse(fs.readFileSync("nonces.json"));
+	for (var key in nonces) {
+		if (!nonces.hasOwnProperty(key)) continue;
+		noncesLookup[nonces[key]] = key;
 	}
 }
 
@@ -103,6 +116,14 @@ function error(req, res, error) {
 	}
 }
 
+function success(req, res, success) {
+	if (req.xhr || req.headers.accept.indexOf('json') > -1) {
+		res.json({ ok: true, success });
+	} else {
+		res.render("success", { successText: success });
+	}
+}
+
 function moveFile(oldPath, newPath, callback) {
 	fs.rename(oldPath, newPath, err => {
 		if (err) {
@@ -129,6 +150,31 @@ function moveFile(oldPath, newPath, callback) {
 
 		readStream.pipe(writeStream);
 	}
+}
+
+function generateNonce(filePath) {
+	let nonce;
+	let attempts = 0;
+	do {
+		nonce = crNonce.next();
+		attempts++;
+
+		if (attempts > 20) {
+			return "CouldNotGenerateUniqueNonceAfter20Attempts.";
+		}
+	} while (nonces[nonce]);
+	nonces[filePath] = nonce;
+	noncesLookup[nonce] = filePath;
+	fs.writeFile("nonces.json", JSON.stringify(nonces), () => {});
+	return nonce;	
+}
+
+function removeNonce(nonce) {
+	delete statCache[noncesLookup[nonce]];
+	delete nonces[noncesLookup[nonce]];
+	delete noncesLookup[nonce];
+	fs.writeFile("nonces.json", JSON.stringify(nonces), () => {});
+	fs.writeFile("stats.json", JSON.stringify(statCache), () => {});
 }
 
 app.use(promBundle({
@@ -227,27 +273,42 @@ router.post("/upload", (req, res) => {
 
 	if ( req.body.link ) {
 		fs.writeFile( `${config.imagePath}/${name}` , req.body.link, (err) => {
-			if (err) return console.log(JSON.stringify(err));
+			if (err) {error(req, res, "Upload Failed."); return console.log(JSON.stringify(err));}
+			let nonce = generateNonce(`${config.imagePath}/${name}`)
 			name = "l/" + name;
-			res.json({
-				ok: true,
-				url: `${config.url.replace(/\/?$/, "/")}${name}`
-			});
+			
+			if (req.body.online === "yes") {
+				success(req, res, `Url Shortened to <a href="${config.url}${name}">"${config.url}${name}"</a>` );
+			} else {
+				res.json({
+					ok: true,
+					url: `${config.url.replace(/\/?$/, "/")}${name}`,
+					deleteUrl: config.uploadDeleteLink ? `${config.url.replace(/\/?$/, "/")}delete/${nonce}` : undefined
+				});
+			}
 		});
 	}
 	else if ( file ) {
 		fs.writeFile( `${config.imagePath}/${name}${ext}` , file, (err) => {
-			if (err) return console.log(JSON.stringify(err));
-			res.json({
-				ok: true,
-				url: `${config.url.replace(/\/?$/, "/")}${name}${ext}`
-			});
+			if (err) {error(req, res, "Upload Failed."); return console.log(JSON.stringify(err));}
+			let nonce = generateNonce(`${config.imagePath}/${name}${ext}`)
+			
+			if (req.body.online === "yes") {
+				res.redirect(`${config.url}${name}${ext}`);
+			} else {
+				res.json({
+					ok: true,
+					url: `${config.url.replace(/\/?$/, "/")}${name}${ext}`,
+					deleteUrl: config.uploadDeleteLink ? `${config.url.replace(/\/?$/, "/")}delete/${nonce}` : undefined
+				});
+			}
 		});
 	}
 	else {
 		moveFile( req.files.file.file, `${config.imagePath}/${name}${ext}`, err => {
-			if (err) return console.log(JSON.stringify(err));
-
+			if (err) {error(req, res, "Upload Failed."); return console.log(JSON.stringify(err));}
+			let nonce = generateNonce(`${config.imagePath}/${name}${ext}`)
+			
 			if (typeof req.query.paste !== "undefined") {
 				name = "paste/" + name;
 			}
@@ -257,11 +318,56 @@ router.post("/upload", (req, res) => {
 			} else {
 				res.json({
 					ok: true,
-					url: `${config.url.replace(/\/?$/, "/")}${name}${ext}`
+					url: `${config.url.replace(/\/?$/, "/")}${name}${ext}`,
+					deleteUrl: config.uploadDeleteLink ? `${config.url.replace(/\/?$/, "/")}delete/${nonce}` : undefined
 				});
 			}
 		});
 	}
+});
+
+router.all("/delete/:nonce", auth, (req, res) => {
+	if (typeof req.params.nonce === "undefined" || typeof noncesLookup[req.params.nonce] === "undefined") return error(req, res, "Invalid nonce provided");
+	
+	if (!config.uploadDeleteLink && ( !req.session || !req.session.authed ) ) {
+		if (!req.body.password) return error(req, res, "No password specified.");
+		if (crypto.createHash("sha256").update(req.body.password).digest("hex") !== config.password) return error(req, res, "Incorrect password.");
+	}
+	
+	const filePath = noncesLookup[req.params.nonce];
+	const fileName = path.basename(filePath);
+	
+	if (!fs.existsSync(filePath)) return error(req, res, "File don't exist");
+	
+	moveFile( filePath , `${config.imagePath}/.deleted/${fileName}`, err => {
+		if (err) {error(req, res, "Deletion Failed."); return console.log(JSON.stringify(err));}
+		success(req, res, `File ${fileName} deleted successfuly`);
+		removeNonce(req.params.nonce)
+	});
+});
+
+router.post("/rename", (req, res) => {
+	if ( typeof req.body.nonce === "undefined" || typeof req.body.name === "undefined" || typeof noncesLookup[req.body.nonce] === "undefined" ) return error(req, res, "No file specified.");
+
+	if (!req.session || !req.session.authed) {
+		if (!req.body.password) return error(req, res, "No password specified.");
+		if (crypto.createHash("sha256").update(req.body.password).digest("hex") !== config.password) return error(req, res, "Incorrect password.");
+	}
+	
+	const filePath = noncesLookup[req.body.nonce];
+	const fileName = path.basename(filePath);
+	const name = sanitizeFilename(req.body.name);
+	
+	if (!fs.existsSync(filePath)) return error(req, res, "File don't exist");
+	if (fs.existsSync(`${config.imagePath}/${name}`)) return error(req, res, "Filename already in use."); 
+	if (path.extname(name).toLowerCase() === ".php") return error(req, res, "Disallowed file type.");
+	
+	moveFile( filePath , `${config.imagePath}/${name}`, err => {
+		if (err) {error(req, res, "Rename Failed."); return console.log(JSON.stringify(err));}
+		generateNonce(`${config.imagePath}/${name}`)
+		success(req, res, `File ${fileName} renamed to ${name} successfuly`);
+		removeNonce(req.body.nonce)
+	});
 });
 
 router.get("/paste/:file", (req, res) => {
@@ -342,7 +448,8 @@ function fileListing(mask, pageTemplate, route, req, res) {
 			size: stat.size,
 			mtime: stat.mtime,
 			mtimeSave: stat.mtime.toString(),
-			c: (stat.size <= 1024 && path.extname(f) == "" ? fs.readFileSync(`${f}`, { encoding: "utf8" }).trim() : undefined) /* undefined is not saved into JSON */
+			c: (stat.size <= 1024 && ext == "" ? fs.readFileSync(`${f}`, { encoding: "utf8" }).trim() : undefined), /* undefined is not saved into JSON */
+			nonce: (nonces[f] || generateNonce(f))
 		};
 
 		statCache[f] = o;

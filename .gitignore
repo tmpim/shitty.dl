@@ -2,8 +2,9 @@ node_modules/
 .idea/
 config.json
 stats.json
+nonces.json
 sessions
-custom-name.js
+/custom-name.js
 /*.txt
 /imgs/
 /public/*

@@ -11,19 +11,30 @@
 			<div class="ui content">
 				<div class="ui link eight doubling cards">
 					{{#each files}}
-						<a href="{{@root.pathname}}{{name}}" class="card">
+						<div class="card">
 							{{#if video}}
-							<video controls playsinline loop style="max-width: 100%;max-height: 100%;display: inline-block;vertical-align: middle" preload='metadata' src="{{@root.pathname}}{{name}}"><div class="image"><img class="lazy" data-original="{{@root.pathname}}{{@root.config.logo}}"></div></video>
+							<video controls playsinline loop class="image" style="max-width: 100%;max-height: 100%;display: inline-block;vertical-align: middle" preload='metadata' src="{{@root.pathname}}{{name}}">
+								<a href="{{@root.pathname}}{{name}}" class="image">
+									<img class="lazy" data-original="{{@root.pathname}}{{@root.config.logo}}">
+								</a>
+							</video>
 							{{else}}
-							<div class="image">
+							<a href="{{@root.pathname}}{{name}}" class="image">
 								<img class="lazy" data-original="{{@root.pathname}}{{name}}">
-							</div>
+							</a>
 							{{/if}}
-							<div class="extra content">
-								{{fileSize size}}
-								<span class="right floated">{{dateformat mtime}}</span>
+							<div class="content">
+								<a href="{{@root.pathname}}{{name}}" class="header">{{name}}</a>
+								<div class="meta">
+									{{fileSize size}}
+									<span class="right floated">{{dateformat mtime}}</span>
+								</div>
 							</div>
-						</a>
+							<div class="extra content">
+								<span onclick="startRename('{{nonce}}','{{name}}')" class="left floated mini ui button"><i class="edit icon"></i>Rename</span>
+								<span onclick="startDelete('{{nonce}}','{{name}}')" class="right floated mini negative ui button"><i class="eraser icon"></i>Delete</span>
+							</div>
+						</div>
 					{{/each}}
 				</div>
 			</div>
