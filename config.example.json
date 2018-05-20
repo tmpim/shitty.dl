@@ -12,7 +12,7 @@
     "pasteThemePath": "https://atom.github.io/highlights/examples/atom-dark.css",
     "oldPasteThemeCompatibility": true,
     "sessionSecret": "",
-	"uploadDeleteLink": true,
+    "uploadDeleteLink": true,
     "languagePackages": [
       "language-lua"
     ]
