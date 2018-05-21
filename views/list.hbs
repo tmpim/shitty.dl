@@ -21,7 +21,13 @@
 					<tbody>
 						{{#each files}}
 							<tr>
-								<td><a href="{{@root.pathname}}{{name}}">{{name}}</a><a href="{{@root.pathname}}paste/{{name}}" class="right floated"><i class="code icon"></i></a></td>
+								<td>
+									<a href="{{@root.pathname}}{{name}}">{{name}}</a>
+									<div class="ui right floated mini icon buttons">
+										<div onclick="copyLinkToClipboard(this)" class="ui primary button"><i class="copy outline icon"></i></div>
+										<a href="{{@root.pathname}}paste/{{name}}" class="ui secondary button"><i class="code icon"></i></a>
+									</div>
+								</td>
 								<td class="collapsing">{{dateformat mtime}}</td>
 								<td class="collapsing">{{fileSize size}}</td>
 								<td class="right aligned collapsing">

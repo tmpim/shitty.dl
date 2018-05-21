@@ -30,6 +30,16 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qs/6.5.1/qs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery_lazyload/1.9.7/jquery.lazyload.min.js"></script>
 <script>
+	function copyToClipboard(text) {
+		let tempImput = $("<input>");
+		$("body").append(tempImput);
+		tempImput.val(text).select();
+		document.execCommand("copy");
+		tempImput.remove();
+	}
+	function copyLinkToClipboard(element) {
+		copyToClipboard($(element).parent().parent().children("a")[0].href);
+	}
 	function startRename(nonce, name) {
 		let newName = prompt("Please proivide new filename", name);
 		if (newName) {

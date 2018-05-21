@@ -31,8 +31,9 @@
 								</div>
 							</div>
 							<div class="extra content">
-								<span onclick="startRename('{{nonce}}','{{name}}')" class="left floated mini ui button"><i class="edit icon"></i>Rename</span>
-								<span onclick="startDelete('{{nonce}}','{{name}}')" class="right floated mini negative ui button"><i class="eraser icon"></i>Delete</span>
+								<span onclick="copyLinkToClipboard(this)" class="ui mini compact primary icon button"><i class="copy outline icon"></i></span>
+								<span onclick="startRename('{{nonce}}','{{name}}')" class=" ui mini compact button"><i class="edit icon"></i>Rename</span>
+								<span onclick="startDelete('{{nonce}}','{{name}}')" class="right floated ui mini compact negative button"><i class="eraser icon"></i>Delete</span>
 							</div>
 						</div>
 					{{/each}}
