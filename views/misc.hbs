@@ -1,0 +1,77 @@
+<div class="ui grid">
+	<div class="column" style="margin: 2rem; padding-bottom: 2rem;">
+		<div class="ui centered fluid card">
+			<div class="ui content center aligned">
+				{{> navigation }}
+			</div>
+			<div class="ui content center aligned">
+				<div class="ui input">
+					<input id="pas" placeholder="Password here" type="text">
+					<div class="ui positive button" onclick="$('textarea').each( function(){$(this).val($(this).text().replace('SHITTYPASSWORDHERE',$('#pas').val()));})">Set</div>
+					<div class="ui negative button" onclick="$('textarea').each(function(){$(this).val($(this).text());$('#pas').val('');})">Reset</div>
+				</div>
+			</div>
+			<div class="ui content">
+				<div class="ui link three doubling cards">
+					<div class="card">
+						<div class="content">
+							<div class="header">ShareX Image&File Uploader</div>
+						</div>
+<textarea class="image" readonly style="resize: none; border: none; font-family: monospace" rows=10>{
+  "Name": "{{config.name}} Image&File",
+  "DestinationType": "ImageUploader, FileUploader",
+  "RequestURL": "{{config.url}}upload",
+  "FileFormName": "file",
+  "Arguments": {
+    "password": "SHITTYPASSWORDHERE"
+  },
+  "URL": "$json:.url$",
+  "DeletionURL": "$json:.deleteUrl$"
+}</textarea>
+						<div class="extra content">
+							<div class="ui mini icon primary button" onclick="copyToClipboard($(this).parent().parent().children('textarea').val())"><i class="copy outline icon"></i></div>
+						</div>
+					</div>
+					<div class="card">
+						<div class="content">
+							<div class="header">ShareX Text Uploader</div>
+						</div>
+<textarea class="image" readonly style="resize: none; border: none; font-family: monospace" rows=10>{
+  "Name": "{{config.name}} Text",
+  "DestinationType": "TextUploader",
+  "RequestURL": "{{config.url}}upload?paste=true",
+  "FileFormName": "file",
+  "Arguments": {
+    "password": "SHITTYPASSWORDHERE"
+  },
+  "URL": "$json:.url$",
+  "DeletionURL": "$json:.deleteUrl$"
+}</textarea>
+						<div class="extra content">
+							<div class="ui mini icon primary button" onclick="copyToClipboard($(this).prev().val())"><i class="copy outline icon"></i></div>
+						</div>
+					</div>
+					<div class="card">
+						<div class="content">
+							<div class="header">ShareX URL Shortener</div>
+						</div>
+<textarea class="image" readonly style="resize: none; border: none; font-family: monospace" rows=10>{
+  "Name": "{{config.name}} URLShortener",
+  "DestinationType": "URLShortener",
+  "RequestURL": "{{config.url}}upload",
+  "Arguments": {
+    "password": "SHITTYPASSWORDHERE",
+    "link": "$input$"
+  },
+  "URL": "$json:.url$",
+  "DeletionURL": "$json:.deleteUrl$"
+}</textarea>
+						<div class="extra content">
+							<div class="ui mini icon primary button" onclick="copyToClipboard($(this).prev().val())"><i class="copy outline icon"></i></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

@@ -485,6 +485,14 @@ router.get("/gallery/:page?", auth, (req, res) => fileListing("*.<(jpeg|jpg|png|
 router.get("/list/:page?", auth, (req, res) => fileListing("*", "list", pathname+"list", req, res));
 router.get("/links/:page?", auth, (req, res) => fileListing("<^[^.]+$>", "links", pathname+"links", req, res));
 
+router.get("/misc", auth, (req, res) => {
+	res.render("misc", {
+		config: _.omit(config, ["password", "sessionSecret"]),
+		pageTemplate: "misc",
+		pathname
+	});
+});
+
 console.log(`Listening on ${config.listen} under path ${pathname}`);
 
 app.use(pathname, router);
