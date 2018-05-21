@@ -23,16 +23,21 @@
 							<tr>
 								<td>
 									<a href="{{@root.pathname}}l/{{name}}" class="alertable">{{name}} -> {{c}}</a>
-									<div class="ui right floated mini icon buttons">
-										<div onclick="copyLinkToClipboard(this)" class="ui primary button"><i class="copy outline icon"></i></div>
-										<a href="{{@root.pathname}}l/{{name}}" class="ui secondary button"><i class="external icon"></i></a>
-									</div>
 								</td>
 								<td class="collapsing">{{dateformat mtime}}</td>
 								<td class="collapsing">{{fileSize size}}</td>
 								<td class="right aligned collapsing">
-									<div onclick="startRename('{{nonce}}','{{name}}')" class="ui mini button"><i class="edit icon"></i>Rename</div>
-									<div onclick="startDelete('{{nonce}}','{{name}}')" class="ui mini negative button"><i class="eraser icon"></i>Delete</div>
+									<div class="ui mini icon buttons">
+										<div onclick="copyListToClipboard(this)" class="ui primary button"><i class="copy outline icon"></i></div>
+										<a href="{{@root.pathname}}l/{{name}}" class="ui button"><i class="external icon"></i></a>
+										<div class="ui button clickpopupactivator" data-position="left center"><i class="icon settings"></i></div>
+										<div class="ui flowing popup transition hidden">
+											<div class="ui mini labeled icon buttons">
+												<div onclick="startRename('{{nonce}}','{{name}}')" class="ui button"><i class="edit icon"></i>Rename</div>
+												<div onclick="startDelete('{{nonce}}','{{name}}')" class="ui negative button"><i class="eraser icon"></i>Delete</div>
+											</div>
+										</div>
+									</div>
 								</td>
 							</tr>
 						{{/each}}

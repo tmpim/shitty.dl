@@ -37,7 +37,10 @@
 		document.execCommand("copy");
 		tempImput.remove();
 	}
-	function copyLinkToClipboard(element) {
+	function copyListToClipboard(element) {
+		copyToClipboard($(element).parent().parent().parent().children("td").children("a")[0].href);
+	}
+	function copyGalerryToClipboard(element) {
 		copyToClipboard($(element).parent().parent().children("a")[0].href);
 	}
 	function startRename(nonce, name) {
@@ -128,6 +131,11 @@
 			e.preventDefault();
 			alert($(this)[0].href); /* This realy should be something nicer then alert. Dunno what ;p */
 		});
+		
+		$(".clickpopupactivator").popup({
+			inline: true,
+			on: 'click'
+		 });
 
 		if ( $(".ui.file.input").length ) {
 			
