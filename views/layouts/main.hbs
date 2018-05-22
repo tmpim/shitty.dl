@@ -119,11 +119,13 @@
 		$.event.special.swipe.durationThreshold = 100;
 
 		$( "div.ui.grid" ).on( "swiperight", function(e){
-			if ($("a.ui.icon.button").not(".right").not(".disabled").length) { $("a.ui.icon.button").not(".right").not(".disabled")[0].click() }
+			console.log("swiperight");
+			if ($("a.ui.icon.button.pageLeft").not(".disabled").length) { $("a.ui.icon.button.pageLeft").not(".right").not(".disabled")[0].click() }
 			else if ($("a.ui.button.active").prev().length) { $("a.ui.button.active").prev()[0].click() }
 		});
 		$( "div.ui.grid" ).on( "swipeleft", function(){
-			if ($("a.ui.right.icon.button").not(".disabled").length) { $("a.ui.right.icon.button").not(".disabled")[0].click() }
+			console.log("swipeleft");
+			if ($("a.ui.icon.button.pageRight").not(".disabled").length) { $("a.ui.icon.button.pageRight").not(".disabled")[0].click() }
 			else if ($("a.ui.button.active").next().length) { $("a.ui.button.active").next()[0].click() }
 		});
 		
@@ -209,7 +211,7 @@
 
 			};
 
-			$(".ui.fluid.button").on("click", function(e) {
+			$("#SubmitButton").on("click", function(e) {
 				e.preventDefault();
 				e.stopPropagation();
 				SubmitData( $("input:file", ".ui.file.input")[0].files.item(0) );
