@@ -92,7 +92,18 @@ if (!fs.existsSync(`${config.imagePath}/.deleted`)){
     fs.mkdirSync(`${config.imagePath}/.deleted`);
 }
 
-app.engine(".hbs", handlebars({ defaultLayout: "main", extname: ".hbs", helpers: _.merge(helpers, { "dateformat" : dateformat }) }));
+app.engine(".hbs", handlebars({
+	defaultLayout: "main",
+	extname: ".hbs",
+	helpers: _.merge(helpers, {
+		"dateformat" : dateformat,
+		section: function(name, options){
+			if(!this._sections) this._sections = {};
+			this._sections[name] = options.fn(this);
+			return null;
+		}
+	})
+}));
 app.set("view engine", ".hbs");
 app.use(session({
 	secret: config.sessionSecret,
