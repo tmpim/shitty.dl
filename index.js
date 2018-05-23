@@ -169,7 +169,6 @@ function generateNonce(filePath) {
 	} while (nonces[nonce]);
 	nonces[filePath] = nonce;
 	noncesLookup[nonce] = filePath;
-	fs.writeFile("nonces.json", JSON.stringify(nonces), () => {});
 	return nonce;
 }
 
@@ -179,6 +178,14 @@ function removeNonce(nonce) {
 	delete noncesLookup[nonce];
 	fs.writeFile("nonces.json", JSON.stringify(nonces), () => {});
 	fs.writeFile("stats.json", JSON.stringify(statCache), () => {});
+}
+
+function flushStats() {
+	fs.writeFile("stats.json", JSON.stringify(statCache), () => {});
+}
+
+function flushNonces() {
+	fs.writeFile("nonces.json", JSON.stringify(nonces), () => {});
 }
 
 app.use(promBundle({
@@ -281,7 +288,8 @@ router.post("/upload", (req, res) => {
 					   error(req, res, "Upload failed.");
 					   return console.log(JSON.stringify(err));
 			}
-			let nonce = generateNonce(`${config.imagePath}/${name}`)
+			let nonce = generateNonce(`${config.imagePath}/${name}`);
+			flushNonces();
 			name = "l/" + name;
 
 			if (req.body.online === "yes") {
@@ -300,7 +308,8 @@ router.post("/upload", (req, res) => {
 					   error(req, res, "Upload failed.");
 					   return console.log(JSON.stringify(err));
 			}
-			let nonce = generateNonce(`${config.imagePath}/${name}${ext}`)
+			let nonce = generateNonce(`${config.imagePath}/${name}${ext}`);
+			flushNonces();
 
 			if (req.body.online === "yes") {
 				res.redirect(`${config.url}${name}${ext}`);
@@ -318,7 +327,8 @@ router.post("/upload", (req, res) => {
 					   error(req, res, "Upload failed.");
 					   return console.log(JSON.stringify(err));
 			}
-			let nonce = generateNonce(`${config.imagePath}/${name}${ext}`)
+			let nonce = generateNonce(`${config.imagePath}/${name}${ext}`);
+			flushNonces();
 
 			if (typeof req.query.paste !== "undefined") {
 				name = "paste/" + name;
@@ -375,7 +385,6 @@ router.post("/rename", (req, res) => {
 
 	moveFile( filePath , `${config.imagePath}/${name}`, err => {
 		if (err) {error(req, res, "Rename Failed."); return console.log(JSON.stringify(err));}
-		generateNonce(`${config.imagePath}/${name}`)
 		success(req, res, `File ${fileName} renamed to ${name} successfuly`);
 		removeNonce(req.body.nonce)
 	});
@@ -468,7 +477,8 @@ function fileListing(mask, pageTemplate, route, req, res) {
 		return o;
 	}), "mtime"));
 
-	fs.writeFile("stats.json", JSON.stringify(statCache), () => {});
+	flushStats();
+	flushNonces();
 
 	res.render(pageTemplate, {
 		route,
