@@ -13,7 +13,7 @@
 			</div>
 			<div class="ui content text">
 				<form class="ui basic form segment left aligned" action="{{pathname}}upload" method="post" enctype="multipart/form-data">
-					<div class="field" id="Modefield">
+					<div class="field" id="modefield">
 						<label for="mode">Choose upload type: </label>
 						<div class="ui selection dropdown" id="modeSelect" tabindex="0">
 							<input name="mode" value="File" id="mode" type="hidden">
@@ -26,7 +26,7 @@
 							</div>
 						</div>
 					</div>
-					<div class="field" id="Filefield">
+					<div class="field" id="filefield">
 						<label for="file">Choose, drop or paste file</label>
 						<div class="ui fluid file input action">
 							<input type="text" id="fakefile" readonly placeholder="File">
@@ -36,16 +36,16 @@
 							</div>
 						</div>
 					</div>
-					<div class="field" id="URLfield" style="display: none;">
-						<label for="URL">Fully qualified URL to shorten.</label>
-						<input type="text" name="URL"  id="URL" placeholder="Fully qualified URL">
+					<div class="field" id="urlfield" style="display: none;">
+						<label for="url">Fully qualified URL to shorten.</label>
+						<input type="text" name="url"  id="url" placeholder="Fully qualified URL">
 					</div>
-					<div class="field" id="Namefield">
+					<div class="field" id="namefield">
 						<label for="filename">Custom filename (optional)</label>
 						<input type="text" name="filename" id="filename" placeholder="Custom filename (optional)">
 					</div>
 					<input type="hidden" name="online" value="yes">
-					<button id="SubmitButton" class="ui fluid primary button" type="submit">Submit</button>
+					<button id="submitButton" class="ui fluid primary button" type="submit">Submit</button>
 					<div class="ui indicating progress" id="progress" style="margin-top: 1rem; display: none;">
 						<div class="bar">
 							<div class="progress"></div>
@@ -83,12 +83,12 @@
 				$(".ui.basic.form")[0].reset();
 				$("#filename").val(name);
 				if (value == "Link") {
-					$('#Filefield').hide();
-					$('#URLfield').show();
+					$('#filefield').hide();
+					$('#urlfield').show();
 				}
 				else {
-					$('#Filefield').show();
-					$('#URLfield').hide();
+					$('#filefield').show();
+					$('#urlfield').hide();
 				};
 			}
 		});
@@ -102,9 +102,9 @@
 			$("body").html('<div class="ui middle aligned center aligned grid"><div class="column"><div class="ui centered green card"><div class="content"><h1 class="header" style="color: #229A33 !important; font-size: 175%">Success</h1></div><p class="ui content text" id="success" style="font-size: 120%"></p><p class="ui content text" style="font-size: 120%"><button  class="ui primary button" onClick="window.location.reload(true)" type="button">Go Back</button></p></div></div></div>');				$("#success").text(mess);
 		}
 		
-		function SubmitData(file) {
+		function submitData(file) {
 			if (file == null && $('#mode').val() != "Link") return errorMessage("No file specified.");
-			$("#SubmitButton").addClass('loading').addClass('disabled');
+			$("#submitButton").addClass('loading').addClass('disabled');
 			var progress = $('#progress').show().progress().progress("set percent",0);
 			var formData = new FormData();
 			formData.append("name",$("#filename").val());
@@ -116,7 +116,7 @@
 				formData.append("file",file);
 			}
 			else {
-				formData.append("link",$('#URL').val());
+				formData.append("link",$('#url').val());
 			};
 			$.ajax({
 			url: urlQuery,
@@ -151,10 +151,10 @@
 
 		};
 
-		$("#SubmitButton").on("click", function(e) {
+		$("#submitButton").on("click", function(e) {
 			e.preventDefault();
 			e.stopPropagation();
-			SubmitData( $("#file")[0].files.item(0) );
+			submitData( $("#file")[0].files.item(0) );
 		});
 
 		$( document ).on('drag dragstart dragend dragover dragenter dragleave drop', function(e) {
@@ -165,28 +165,28 @@
 			if ($('#mode').val() == "Link") {
 				$('#modeSelect').dropdown("set selected","File");
 			}
-			$("#SubmitButton").removeClass('primary').addClass('secondary').html("Drop to upload");
-			$("#Modefield").addClass('disabled');
-			$('#Filefield').addClass('disabled');
+			$("#submitButton").removeClass('primary').addClass('secondary').html("Drop to upload");
+			$("#modefield").addClass('disabled');
+			$('#filefield').addClass('disabled');
 		})
 		.on('dragleave dragend', function() {
-			$("#SubmitButton").removeClass('secondary').addClass('primary').html("Submit");
-			$("#Modefield").removeClass('disabled');
-			$('#Filefield').removeClass('disabled');
+			$("#submitButton").removeClass('secondary').addClass('primary').html("Submit");
+			$("#modefield").removeClass('disabled');
+			$('#filefield').removeClass('disabled');
 		})
 		.on('drop', function(e) {
-			$("#SubmitButton").removeClass('secondary').addClass('primary').html("Submit");
+			$("#submitButton").removeClass('secondary').addClass('primary').html("Submit");
 			$("#fakefile").val("Droped File");
-			SubmitData(e.originalEvent.dataTransfer.files.item(0));
+			submitData(e.originalEvent.dataTransfer.files.item(0));
 		})
 		.on("paste", function(e){
 			var pastedData = e.originalEvent.clipboardData.items[0];
 			if ($('#mode').val() != "Link" && pastedData.kind === 'file') {
 				e.preventDefault();
 				e.stopPropagation();
-				$("#Modefield").addClass('disabled');
+				$("#modefield").addClass('disabled');
 				$("#fakefile").val("Pasted File");
-				SubmitData(pastedData.getAsFile());
+				submitData(pastedData.getAsFile());
 			}
 		});
 	});
