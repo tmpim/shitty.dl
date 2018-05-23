@@ -30,6 +30,25 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qs/6.5.1/qs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery_lazyload/1.9.7/jquery.lazyload.min.js"></script>
 <script>
+
+	var urlParams = typeof URLSearchParams === "function" ? new URLSearchParams(location.search) : { get: function() { return undefined; } }
+
+	function copyToClipboard(text) {
+		let tempImput = $("<input>");
+		$("body").append(tempImput);
+		tempImput.val(text).select();
+		document.execCommand("copy");
+		tempImput.remove();
+	};
+
+	function copyListToClipboard(element) {
+		copyToClipboard($(element).parent().parent().children("td").children("a")[0].href);
+	};
+
+	function copyGalerryToClipboard(element) {
+		copyToClipboard($(element).parent().parent().children("a")[0].href);
+	};
+
 	function startRename(nonce, name) {
 		let newName = prompt("Please proivide new filename", name);
 		if (newName) {
@@ -40,208 +59,57 @@
 			.submit();
 		};
 	};
+
 	function startDelete(nonce, name) {
 		if (confirm(`Please confirm you want to delete the ${name} file.`)) {
-			$(`<form action='{{pathname}}delete/${nonce}' method="POST"/>`)
+			$(`<form action="{{pathname}}delete/${nonce}" method="POST"/>`)
 			.appendTo($(document.body))
 			.submit();
 		};
 	};
-	$(function() {
 
-		var urlParams = typeof URLSearchParams === "function" ? new URLSearchParams(location.search) : { get: function() { return undefined; } }
+	$(function() {
 
 		$("img.lazy").lazyload({
 			effect: "fadeIn"
 		});
-
-		$(".ui.file.input").find("input:text, .ui.button").on("click", function(e) {
-			$(e.target).parent().find("input:file").click();
-		});
-
-		$("input:file", ".ui.file.input").on("change", function(e) {
-			var file = $(e.target);
-			var name = "";
-
-			for (var i=0; i<e.target.files.length; i++) {
-				name += e.target.files[i].name + ", ";
-			}
-
-			name = name.replace(/,\s*$/, "");
-
-			$("input:text", file.parent()).val(name);
-		});
-
-		$("#rangestart").calendar({
-			type: "date",
-			endCalendar: $("#rangeend")
-		}).calendar("set date",urlParams.get('start'));
-
-		$("#rangeend").calendar({
-			type: "date",
-			startCalendar: $("#rangestart")
-		}).calendar("set date",urlParams.get('end'));
-
+		
 		$(".ui.accordion").accordion();
 
-		$("#filter-search").val(urlParams.get('search'));
-		$("#filter-search").keyup(function(event) {
-			if (event.keyCode === 13) {
-				$("#filter-submit").click();
-			}
-		});
-		
-		$("#filter-submit").click(function() {
-			const q = Qs.parse(location.search.replace(/^\?/, ""));
-			if ($("#rangestart").calendar("get date")) q.start = $("#rangestart").calendar("get date").toString();
-			if ($("#rangeend").calendar("get date")) q.end = $("#rangeend").calendar("get date").toString();
-			q.search = $("#filter-search").val();
-			location.search = Qs.stringify(q);
+		$(".clickpopupactivator").popup({
+			inline: true,
+			on: 'click'
 		});
 
-		$("#filter-clear").click(function() {
-			location.search = "";
-		});
-		
-		$.event.special.swipe.durationThreshold = 100;
-
-		$( "div.ui.grid" ).on( "swiperight", function(e){
-			if ($("a.ui.icon.button").not(".right").not(".disabled").length) { $("a.ui.icon.button").not(".right").not(".disabled")[0].click() }
-			else if ($("a.ui.button.active").prev().length) { $("a.ui.button.active").prev()[0].click() }
-		});
-		$( "div.ui.grid" ).on( "swipeleft", function(){
-			if ($("a.ui.right.icon.button").not(".disabled").length) { $("a.ui.right.icon.button").not(".disabled")[0].click() }
-			else if ($("a.ui.button.active").next().length) { $("a.ui.button.active").next()[0].click() }
-		});
-		
 		$(".alertable").on( "click", function(e) {
 			e.preventDefault();
 			alert($(this)[0].href); /* This realy should be something nicer then alert. Dunno what ;p */
 		});
 
-		if ( $(".ui.file.input").length ) {
-			
-			$('.ui.dropdown').dropdown().dropdown({
-				onChange: function(value, text, selectedItem) {
-					let name = $("#name").val();
-					$(".ui.basic.form")[0].reset();
-					$("#name").val(name);
-					if (value == "Link") {
-						$('#Filefield').hide();
-						$('#URLfield').show();
-					}
-					else {
-						$('#Filefield').show();
-						$('#URLfield').hide();
-					};
-				}
-			});
-			
-			function errorMessage(err) {
-				$("body").html('<div class="ui middle aligned center aligned grid"><div class="column"><div class="ui centered green card"><div class="content"><h1 class="header" style="color: #DB2828 !important; font-size: 175%">Error</h1></div><p class="ui content text" id="error" style="font-size: 120%"></p><p class="ui content text" style="font-size: 120%"><button class="ui primary button" onClick="window.location.reload(true)" type="button">Go Back</button></p></div></div></div>');
-				$("#error").text(err);
-			}
-			
-			function SubmitData(file) {
-				if (file == null && $('#mode').val() != "Link") return errorMessage("No file specified.");
-				$(".ui.fluid.button").addClass('loading').addClass('disabled');
-				var progress = $('#progress').show().progress().progress("set percent",0);
-				var formData = new FormData();
-				formData.append("name",$("#name").val());
-				var urlQuery = "{{pathname}}upload";
-				if ($('#mode').val() != "Link") {
-					if ($('#mode').val() == "Paste") {
-						urlQuery = "{{pathname}}upload?"+$.param({ paste : 'true'});
-					}
-					formData.append("file",file);
-					
-				}
-				else {
-					formData.append("link",$('#URL').val());
-				};
-				$.ajax({
-				url: urlQuery,
-				data: formData,
-				processData: false,
-				contentType: false,
-				type: 'POST',
-				xhr: function(){
-					var xhr = new window.XMLHttpRequest();
-					function HandlePrecent(evt) {if (evt.lengthComputable) { progress.progress("set percent",evt.loaded / evt.total * 100); } }
-					xhr.upload.addEventListener("progress", HandlePrecent, false);
-					xhr.addEventListener("progress", HandlePrecent, false);
-					return xhr;
-				},
-				success: function(result){
-					if (result.ok){
-						if ($('#mode').val() != "Link") {
-							window.location.href = result.url ;
-						}
-						else {
-							$("body").html('<div class="ui middle aligned center aligned grid"><div class="column"><div class="ui centered green card"><div class="content"><h1 class="header" style="color: #229A33 !important; font-size: 175%">Success</h1></div><p class="ui content text" id="success" style="font-size: 120%"></p><p class="ui content text" style="font-size: 120%"><button  class="ui primary button" onClick="window.location.reload(true)" type="button">Go Back</button></p></div></div></div>');
-							$("#success").text(result.url);
-						}
-					}
-					else { errorMessage(result.error)}
-				},
-				error: function(xhr, textStatus, errorThrown){
-					errorMessage("Error Uploading: " + errorThrown);
-				}
-				});
+		$.event.special.swipe.durationThreshold = 100;
 
-			};
-
-			$(".ui.fluid.button").on("click", function(e) {
-				e.preventDefault();
-				e.stopPropagation();
-				SubmitData( $("input:file", ".ui.file.input")[0].files.item(0) );
-			});
-
-			$( document ).on('drag dragstart dragend dragover dragenter dragleave drop', function(e) {
-				e.preventDefault();
-				e.stopPropagation();
-			})
-			.on('dragover dragenter', function() {
-				if ($('#mode').val() == "Link") {
-					$('.ui.dropdown').dropdown("set selected","File");
-				}
-				$(".ui.fluid.button").removeClass('primary').addClass('secondary').html("Drop to upload");
-				$(".ui.basic.form.segment.left.aligned").children(":first").addClass('disabled');
-				$('#Filefield').addClass('disabled');
-			})
-			.on('dragleave dragend', function() {
-				$(".ui.fluid.button").removeClass('secondary').addClass('primary').html("Submit");
-				$(".ui.basic.form.segment.left.aligned").children(":first").removeClass('disabled');
-				$('#Filefield').removeClass('disabled');
-			})
-			.on('drop', function(e) {
-				$(".ui.fluid.button").removeClass('secondary').addClass('primary').html("Submit");
-				$("input:file", ".ui.file.input").parent().children(":first").val("Droped File");
-				SubmitData(e.originalEvent.dataTransfer.files.item(0));
-			})
-			.on("paste", function(e){
-				var pastedData = e.originalEvent.clipboardData.items[0];
-				if ($('#mode').val() != "Link" && pastedData.kind === 'file') {
-					e.preventDefault();
-					e.stopPropagation();
-					$(".ui.basic.form.segment.left.aligned").children(":first").addClass('disabled');
-					$("input:file", ".ui.file.input").parent().children(":first").val("Pasted File");
-					SubmitData(pastedData.getAsFile());
-				}
-				
-			});
-		}
-		else {
-			$("div.ui.fluid.four.basic.buttons").children().last().on('drag dragstart dragend dragover dragenter dragleave drop', function(e) {
-				e.preventDefault();
-				e.stopPropagation();
-			})
-			.on('dragenter', function() {
-				$("div.ui.fluid.four.basic.buttons").children().last()[0].click();
-			})
-		};
-
+		$( "div.ui.grid" ).on( "swiperight", function(e){
+			console.log("swiperight");
+			if ($("a.ui.icon.button.pageLeft").not(".disabled").length) { $("a.ui.icon.button.pageLeft").not(".right").not(".disabled")[0].click() }
+			else if ($("a.ui.button.active").prev().length) { $("a.ui.button.active").prev()[0].click() }
+		});
+		$( "div.ui.grid" ).on( "swipeleft", function(){
+			console.log("swipeleft");
+			if ($("a.ui.icon.button.pageRight").not(".disabled").length) { $("a.ui.icon.button.pageRight").not(".disabled")[0].click() }
+			else if ($("a.ui.button.active").next().length) { $("a.ui.button.active").next()[0].click() }
+		});
+{{#eq pageTemplate "upload"}}{{else}}
+		$("div.ui.fluid.four.basic.buttons").children().last().on('drag dragstart dragend dragover dragenter dragleave drop', function(e) {
+			e.preventDefault();
+			e.stopPropagation();
+		})
+		.on('dragenter', function() {
+			$("div.ui.fluid.four.basic.buttons").children().last()[0].click();
+		})
+{{/eq}}
 	});
 </script>
+{{{_sections.script}}}
+{{{_sections.filters}}}
 </body>
 </html>

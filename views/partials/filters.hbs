@@ -35,3 +35,39 @@
 		</div>
 	</div>
 </div>
+{{#section "filters"}}
+<script>
+	$(function() {
+
+		$("#rangestart").calendar({
+			type: "date",
+			endCalendar: $("#rangeend")
+		}).calendar("set date",urlParams.get('start'));
+
+		$("#rangeend").calendar({
+			type: "date",
+			startCalendar: $("#rangestart")
+		}).calendar("set date",urlParams.get('end'));
+
+		$("#filter-search").val(urlParams.get('search'));
+		$("#filter-search").keyup(function(event) {
+			if (event.keyCode === 13) {
+				$("#filter-submit").click();
+			}
+		});
+		
+		$("#filter-submit").click(function() {
+			const q = Qs.parse(location.search.replace(/^\?/, ""));
+			if ($("#rangestart").calendar("get date")) q.start = $("#rangestart").calendar("get date").toString();
+			if ($("#rangeend").calendar("get date")) q.end = $("#rangeend").calendar("get date").toString();
+			q.search = $("#filter-search").val();
+			location.search = Qs.stringify(q);
+		});
+
+		$("#filter-clear").click(function() {
+			location.search = "";
+		});
+
+	});
+</script>
+{{/section}}

@@ -21,12 +21,21 @@
 					<tbody>
 						{{#each files}}
 							<tr>
-								<td><a href="{{@root.pathname}}{{name}}">{{name}}</a></td>
+								<td>
+									<a href="{{@root.pathname}}{{name}}">{{name}}</a>
+								</td>
 								<td class="collapsing">{{dateformat mtime}}</td>
 								<td class="collapsing">{{fileSize size}}</td>
 								<td class="right aligned collapsing">
-									<div onclick="startRename('{{nonce}}','{{name}}')" class="ui mini button"><i class="edit icon"></i>Rename</div>
-									<div onclick="startDelete('{{nonce}}','{{name}}')" class="ui mini negative button"><i class="eraser icon"></i>Delete</div>
+									<div onclick="copyListToClipboard(this)" class="ui mini icon primary button"><i class="copy outline icon"></i></div>
+									<a href="{{@root.pathname}}paste/{{name}}" class="ui mini icon button"><i class="code icon"></i></a>
+									<div class="ui mini icon button clickpopupactivator" data-position="left center"><i class="icon settings"></i></div>
+									<div class="ui flowing popup transition hidden">
+										<div class="ui mini labeled icon buttons">
+											<div onclick="startRename('{{nonce}}','{{name}}')" class="ui button"><i class="edit icon"></i>Rename</div>
+											<div onclick="startDelete('{{nonce}}','{{name}}')" class="ui negative button"><i class="eraser icon"></i>Delete</div>
+										</div>
+									</div>
 								</td>
 							</tr>
 						{{/each}}

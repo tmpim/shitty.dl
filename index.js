@@ -92,7 +92,18 @@ if (!fs.existsSync(`${config.imagePath}/.deleted`)){
     fs.mkdirSync(`${config.imagePath}/.deleted`);
 }
 
-app.engine(".hbs", handlebars({ defaultLayout: "main", extname: ".hbs", helpers: _.merge(helpers, { "dateformat" : dateformat }) }));
+app.engine(".hbs", handlebars({
+	defaultLayout: "main",
+	extname: ".hbs",
+	helpers: _.merge(helpers, {
+		"dateformat" : dateformat,
+		section: function(name, options){
+			if(!this._sections) this._sections = {};
+			this._sections[name] = options.fn(this);
+			return null;
+		}
+	})
+}));
 app.set("view engine", ".hbs");
 app.use(session({
 	secret: config.sessionSecret,
@@ -347,7 +358,7 @@ router.post("/upload", (req, res) => {
 	}
 });
 
-router.all("/delete/:nonce", auth, (req, res) => {
+router.all("/delete/:nonce", (req, res) => {
 	if (typeof req.params.nonce === "undefined" || typeof noncesLookup[req.params.nonce] === "undefined") return error(req, res, "Invalid nonce provided");
 
 	if (!config.uploadDeleteLink && ( !req.session || !req.session.authed ) ) {
@@ -494,6 +505,14 @@ function fileListing(mask, pageTemplate, route, req, res) {
 router.get("/gallery/:page?", auth, (req, res) => fileListing("*.<(jpeg|jpg|png|gif|mp4|webm)$>", "gallery", pathname+"gallery", req, res));
 router.get("/list/:page?", auth, (req, res) => fileListing("*", "list", pathname+"list", req, res));
 router.get("/links/:page?", auth, (req, res) => fileListing("<^[^.]+$>", "links", pathname+"links", req, res));
+
+router.get("/misc", auth, (req, res) => {
+	res.render("misc", {
+		config: _.omit(config, ["password", "sessionSecret"]),
+		pageTemplate: "misc",
+		pathname
+	});
+});
 
 console.log(`Listening on ${config.listen} under path ${pathname}`);
 

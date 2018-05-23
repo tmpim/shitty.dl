@@ -8,11 +8,14 @@
 			<div class="ui content center aligned">
 				{{> navigation }}
 			</div>
+			<div class="ui content center aligned">
+				<a href="{{pathname}}misc" class="ui fluid basic button">ShareX Upload Configs</a>
+			</div>
 			<div class="ui content text">
 				<form class="ui basic form segment left aligned" action="{{pathname}}upload" method="post" enctype="multipart/form-data">
-					<div class="field">
+					<div class="field" id="modefield">
 						<label for="mode">Choose upload type: </label>
-						<div class="ui selection dropdown" tabindex="0">
+						<div class="ui selection dropdown" id="modeSelect" tabindex="0">
 							<input name="mode" value="File" id="mode" type="hidden">
 							<i class="dropdown icon"></i>
 							<div class="text">File</div>
@@ -23,26 +26,26 @@
 							</div>
 						</div>
 					</div>
-					<div class="field" id="Filefield">
-						<label for="ffile">Choose, drop or paste file</label>
+					<div class="field" id="filefield">
+						<label for="file">Choose, drop or paste file</label>
 						<div class="ui fluid file input action">
-							<input type="text" readonly placeholder="File">
-							<input type="file" id="ffile" name="file" autocomplete="off">
-							<div class="ui button">
+							<input type="text" id="fakefile" readonly placeholder="File">
+							<input style="display: none" type="file" id="file" name="file" autocomplete="off">
+							<div class="ui button" id="filebutton">
 								Select...
 							</div>
 						</div>
 					</div>
-					<div class="field" id="URLfield" style="display: none;">
-						<label for="URL">Fully qualified URL to shorten.</label>
-						<input type="text" name="URL"  id="URL" placeholder="Fully qualified URL">
+					<div class="field" id="urlfield" style="display: none;">
+						<label for="url">Fully qualified URL to shorten.</label>
+						<input type="text" name="url"  id="url" placeholder="Fully qualified URL">
 					</div>
-					<div class="field" id="Namefield">
-						<label for="name">Custom filename (optional)</label>
-						<input type="text" name="name" id="name" placeholder="Custom filename (optional)">
+					<div class="field" id="namefield">
+						<label for="filename">Custom filename (optional)</label>
+						<input type="text" name="filename" id="filename" placeholder="Custom filename (optional)">
 					</div>
 					<input type="hidden" name="online" value="yes">
-					<button class="ui fluid primary button" type="submit">Submit</button>
+					<button id="submitButton" class="ui fluid primary button" type="submit">Submit</button>
 					<div class="ui indicating progress" id="progress" style="margin-top: 1rem; display: none;">
 						<div class="bar">
 							<div class="progress"></div>
@@ -53,9 +56,139 @@
 		</div>
 	</div>
 </div>
+{{#section "script"}}
+<script>
+	$(function() {
+	
+		$("#fakefile, #filebutton").on("click", function(e) {
+			$("#file").click();
+		});
 
-<style>
-	.ui.file.input input[type="file"] {
-		display: none;
-	}
-</style>
+		$("#file").on("change", function(e) {
+			var file = $(e.target);
+			var name = "";
+
+			for (var i=0; i<e.target.files.length; i++) {
+				name += e.target.files[i].name + ", ";
+			}
+
+			name = name.replace(/,\s*$/, "");
+
+			$("#fakefile").val(name);
+		});
+
+		$("#modeSelect").dropdown().dropdown({
+			onChange: function(value, text, selectedItem) {
+				let name = $("#filename").val();
+				$(".ui.basic.form")[0].reset();
+				$("#filename").val(name);
+				if (value == "Link") {
+					$('#filefield').hide();
+					$('#urlfield').show();
+				}
+				else {
+					$('#filefield').show();
+					$('#urlfield').hide();
+				};
+			}
+		});
+		
+		function errorMessage(err) {
+			$("body").html('<div class="ui middle aligned center aligned grid"><div class="column"><div class="ui centered green card"><div class="content"><h1 class="header" style="color: #DB2828 !important; font-size: 175%">Error</h1></div><p class="ui content text" id="error" style="font-size: 120%"></p><p class="ui content text" style="font-size: 120%"><button class="ui primary button" onClick="window.location.reload(true)" type="button">Go Back</button></p></div></div></div>');
+			$("#error").text(err);
+		}
+		
+		function successMessage(mess) {
+			$("body").html('<div class="ui middle aligned center aligned grid"><div class="column"><div class="ui centered green card"><div class="content"><h1 class="header" style="color: #229A33 !important; font-size: 175%">Success</h1></div><p class="ui content text" id="success" style="font-size: 120%"></p><p class="ui content text" style="font-size: 120%"><button  class="ui primary button" onClick="window.location.reload(true)" type="button">Go Back</button></p></div></div></div>');				$("#success").text(mess);
+		}
+		
+		function submitData(file) {
+			if (file == null && $('#mode').val() != "Link") return errorMessage("No file specified.");
+			$("#submitButton").addClass('loading').addClass('disabled');
+			var progress = $('#progress').show().progress().progress("set percent",0);
+			var formData = new FormData();
+			formData.append("name",$("#filename").val());
+			var urlQuery = "{{pathname}}upload";
+			if ($('#mode').val() != "Link") {
+				if ($('#mode').val() == "Paste") {
+					urlQuery = "{{pathname}}upload?"+$.param({ paste : 'true'});
+				}
+				formData.append("file",file);
+			}
+			else {
+				formData.append("link",$('#url').val());
+			};
+			$.ajax({
+			url: urlQuery,
+			data: formData,
+			processData: false,
+			contentType: false,
+			type: 'POST',
+			xhr: function(){
+				var xhr = new window.XMLHttpRequest();
+				function HandlePrecent(evt) {if (evt.lengthComputable) { progress.progress("set percent",evt.loaded / evt.total * 100); } }
+				xhr.upload.addEventListener("progress", HandlePrecent, false);
+				xhr.addEventListener("progress", HandlePrecent, false);
+				return xhr;
+			},
+			success: function(result){
+				$(".ui.basic.form")[0].reset();
+				if (result.ok){
+					if ($('#mode').val() != "Link") {
+						window.location.href = result.url ;
+					}
+					else {
+						successMessage(result.url)
+					}
+				}
+				else {errorMessage(result.error)}
+			},
+			error: function(xhr, textStatus, errorThrown){
+				$(".ui.basic.form")[0].reset();
+				errorMessage("Error Uploading: " + errorThrown);
+			}
+			});
+
+		};
+
+		$("#submitButton").on("click", function(e) {
+			e.preventDefault();
+			e.stopPropagation();
+			submitData( $("#file")[0].files.item(0) );
+		});
+
+		$( document ).on('drag dragstart dragend dragover dragenter dragleave drop', function(e) {
+			e.preventDefault();
+			e.stopPropagation();
+		})
+		.on('dragover dragenter', function() {
+			if ($('#mode').val() == "Link") {
+				$('#modeSelect').dropdown("set selected","File");
+			}
+			$("#submitButton").removeClass('primary').addClass('secondary').html("Drop to upload");
+			$("#modefield").addClass('disabled');
+			$('#filefield').addClass('disabled');
+		})
+		.on('dragleave dragend', function() {
+			$("#submitButton").removeClass('secondary').addClass('primary').html("Submit");
+			$("#modefield").removeClass('disabled');
+			$('#filefield').removeClass('disabled');
+		})
+		.on('drop', function(e) {
+			$("#submitButton").removeClass('secondary').addClass('primary').html("Submit");
+			$("#fakefile").val("Droped File");
+			submitData(e.originalEvent.dataTransfer.files.item(0));
+		})
+		.on("paste", function(e){
+			var pastedData = e.originalEvent.clipboardData.items[0];
+			if ($('#mode').val() != "Link" && pastedData.kind === 'file') {
+				e.preventDefault();
+				e.stopPropagation();
+				$("#modefield").addClass('disabled');
+				$("#fakefile").val("Pasted File");
+				submitData(pastedData.getAsFile());
+			}
+		});
+	});
+</script>
+{{/section}}
