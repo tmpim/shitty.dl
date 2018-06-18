@@ -10,7 +10,6 @@
   "license": "ISC",
   "dependencies": {
     "coderain": "^1.1.0",
-    "connect-sqlite3": "^0.9.10",
     "es6-promisify": "^5.0.0",
     "express": "^4.15.2",
     "express-busboy": "^6.0.1",
@@ -18,8 +17,8 @@
     "express-prom-bundle": "^2.2.0",
     "express-session": "^1.15.6",
     "express-static-gzip": "^0.2.2",
-    "filesize": "^3.5.11",
     "file-type": "^7.6.0",
+    "filesize": "^3.5.11",
     "fs-finder": "^1.8.1",
     "handlebars-helpers": "^0.8.1",
     "helper-dateformat": "^1.0.0",
@@ -29,7 +28,6 @@
     "moment": "^2.20.1",
     "paginator": "^1.0.0",
     "read-chunk": "^2.1.0",
-    "sanitize-filename": "^1.6.1",
-    "sqlite3": "^3.1.13"
+    "sanitize-filename": "^1.6.1"
   }
 }
