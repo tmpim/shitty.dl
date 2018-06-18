@@ -22,8 +22,6 @@ const moment = require("moment");
 
 const paginator = new require("paginator")(48, 8);
 const crypto = require("crypto");
-const Highlights = require("highlights");
-const highlighter = new Highlights({ scopePrefix: config.oldPasteThemeCompatibility ? "" : "syntax--" });
 const sanitizeFilename = require("sanitize-filename");
 const CodeRain = require("coderain");
 const cr = new CodeRain(("#").repeat(config.fileLength || 4));
@@ -32,6 +30,18 @@ const filesize = require("filesize");
 
 const readChunk = require('read-chunk');
 const fileType = require('file-type');
+
+let Highlights, highlighter;
+
+try {
+    Highlights = require("highlights");
+    highlighter = new Highlights({scopePrefix: config.oldPasteThemeCompatibility ? "" : "syntax--"});
+} catch (e) {
+	Highlights = null;
+	highligher = null;
+	console.error("Unable to find `highlights` package. If you require syntax highlighting, please install it.");
+	console.error("If your system is incompatible with `highlights`, feel free to ignore this.");
+}
 
 const app = express();
 
@@ -76,7 +86,7 @@ if (!config.password.match(/^[0-9a-f]{64}$/i)) {
 	process.exit(0);
 }
 
-if (config.languagePackages) {
+if (highlighter && config.languagePackages) {
   config.languagePackages.forEach(package => {
     try {
       const pkg = require.resolve(`${package}/package.json`);
@@ -414,7 +424,9 @@ router.get("/paste/:file", (req, res) => {
 		if (!stats.isFile()) return res.status(404).send("File not found");
 		if (stats.size > 2 ** 19) return error(req, res, `File too large (${filesize(stats.size)})`);
 
-		const html = highlighter.highlightSync({filePath});
+		const html = highlighter
+			? highlighter.highlightSync({filePath})
+			: "<pre class='editor'>" + _.escape(fs.readFileSync(filePath).toString()) + "</pre>";
 
 		res.render("paste", {
 			paste: html,
