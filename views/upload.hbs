@@ -176,7 +176,7 @@
 		})
 		.on('drop', function(e) {
 			$("#submitButton").removeClass('secondary').addClass('primary').html("Submit");
-			$("#fakefile").val("Droped File");
+			$("#fakefile").val("Dropped File");
 			submitData(e.originalEvent.dataTransfer.files.item(0));
 		})
 		.on("paste", function(e){
