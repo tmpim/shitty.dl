@@ -59,19 +59,18 @@ if (fs.existsSync("stats.json")) {
 	statCache = JSON.parse(fs.readFileSync("stats.json"));
 	if (statCache.version !== version) statCache = { version }; /* note: remember to change version every time stats.json format changes */
 	else {
-		for (let key in statCache) {
-			if (!statCache.hasOwnProperty(key) || key === "version") continue;
-			statCache[key].mtime = new Date(statCache[key].mtimeSave);
-		}
+		_.forOwn(statCache, (value, key) => {
+			if ( key === "version" ) return;
+			value.mtime = new Date(value.mtimeSave);
+		});
 	}
 }
 
 if (fs.existsSync("nonces.json")) {
 	nonces = JSON.parse(fs.readFileSync("nonces.json"));
-	for (let key in nonces) {
-		if (!nonces.hasOwnProperty(key)) continue;
+	_.forOwn(nonces, (value, key) => {
 		noncesLookup[nonces[key]] = key;
-	}
+	});
 }
 
 const pathname = new url.URL(config.url).pathname.replace(/\/?$/, "/");
