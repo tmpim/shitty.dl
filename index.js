@@ -109,7 +109,8 @@ app.engine(".hbs", handlebars({
 			if(!this._sections) this._sections = {};
 			this._sections[name] = options.fn(this);
 			return null;
-		}
+		},
+		base64: data => Buffer.from(data).toString("base64")
 	})
 }));
 app.set("view engine", ".hbs");
@@ -408,6 +409,29 @@ router.post("/rename", (req, res) => {
 	});
 });
 
+router.post("/edit", (req, res) => {
+	if ( typeof req.body.nonce === "undefined" && typeof req.body.file === "undefined" || typeof noncesLookup[req.body.nonce] === "undefined" ) return error(req, res, "No file specified.");
+
+	if (!req.session || !req.session.authed) {
+		if (!req.body.password) return error(req, res, "No password specified.");
+		if (crypto.createHash("sha256").update(req.body.password).digest("hex") !== config.password) return error(req, res, "Incorrect password.");
+	}
+
+	const filePath = noncesLookup[req.body.nonce];
+	const fileName = path.basename(filePath);
+	const fileContents = Buffer.from(req.body.file , 'base64');
+
+	if (!fs.existsSync(filePath)) return error(req, res, "File don't exist");
+
+	fs.writeFile(`${filePath}`, fileContents, (err) => {
+		if (err) {
+				   error(req, res, "Edit failed.");
+				   return console.log(JSON.stringify(err));
+		}
+		success(req, res, `File ${fileName} edited successfuly`);
+	});
+});
+
 router.get("/paste/:file", (req, res) => {
 	const filename = sanitizeFilename(req.params.file);
 	const filePath = path.join(config.imagePath, filename);
@@ -418,7 +442,7 @@ router.get("/paste/:file", (req, res) => {
 		if (!fs.existsSync(filePath))  return res.status(404).send("File not found");
 		const stats = fs.statSync(filePath);
 
-		console.log(stats);
+		//console.log(stats);
 
 		if (!stats.isFile()) return res.status(404).send("File not found");
 		if (stats.size > 2 ** 19) return error(req, res, `File too large (${filesize(stats.size)})`);
@@ -431,6 +455,41 @@ router.get("/paste/:file", (req, res) => {
 			paste: html,
 			style: config.pasteThemePath || "https://atom.github.io/highlights/examples/atom-dark.css",
 			name: filename,
+			pathname,
+			layout: false
+		});
+	} catch (err) {
+		error(req, res, err);
+	}
+});
+
+router.get("/edit/:file", (req, res) => {
+	
+	if (!req.session || !req.session.authed) {
+		if (!req.body.password) return error(req, res, "No password specified.");
+		if (crypto.createHash("sha256").update(req.body.password).digest("hex") !== config.password) return error(req, res, "Incorrect password.");
+	}
+	const filename = sanitizeFilename(req.params.file);
+	const filePath = path.join(config.imagePath, filename);
+	const ext = path.extname(filePath)
+
+	if (!filePath) return res.status(404).send("File not found");
+
+	try {
+		if (!fs.existsSync(filePath))  return res.status(404).send("File not found");
+		const stats = fs.statSync(filePath);
+
+		//console.log(stats);
+
+		if (!stats.isFile()) return res.status(404).send("File not found");
+		if (stats.size > 2 ** 19) return error(req, res, `File too large (${filesize(stats.size)})`);
+
+		const filecontents = fs.readFileSync(filePath, { encoding: "utf8" });
+
+		res.render("edit", {
+			filecontents,
+			name: filename,
+			nonce: nonces[filePath],
 			pathname,
 			layout: false
 		});
