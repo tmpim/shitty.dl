@@ -410,7 +410,7 @@ router.post("/rename", (req, res) => {
 });
 
 router.post("/edit", (req, res) => {
-	if ( typeof req.body.nonce === "undefined" && typeof req.body.file === "undefined" || typeof noncesLookup[req.body.nonce] === "undefined" ) return error(req, res, "No file specified.");
+	if ( typeof req.body.nonce === "undefined" || typeof req.body.file === "undefined" || typeof noncesLookup[req.body.nonce] === "undefined" ) return error(req, res, "No file specified.");
 
 	if (!req.session || !req.session.authed) {
 		if (!req.body.password) return error(req, res, "No password specified.");
@@ -465,10 +465,12 @@ router.get("/paste/:file", (req, res) => {
 
 router.get("/edit/:file", (req, res) => {
 	
+	let editor = true;
 	if (!req.session || !req.session.authed) {
-		if (!req.body.password) return error(req, res, "No password specified.");
-		if (crypto.createHash("sha256").update(req.body.password).digest("hex") !== config.password) return error(req, res, "Incorrect password.");
+		if (!req.body.password) {editor = undefined}
+		else if (crypto.createHash("sha256").update(req.body.password).digest("hex") !== config.password) return error(req, res, "Incorrect password.");
 	}
+	
 	const filename = sanitizeFilename(req.params.file);
 	const filePath = path.join(config.imagePath, filename);
 	const ext = path.extname(filePath)
@@ -490,6 +492,7 @@ router.get("/edit/:file", (req, res) => {
 			filecontents,
 			name: filename,
 			nonce: nonces[filePath],
+			editor,
 			pathname,
 			layout: false
 		});
