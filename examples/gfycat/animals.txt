@@ -173,7 +173,7 @@ Rhinoceros
 Rook
 Salamander
 Salmon
-Sand Dollar
+SandDollar
 Sandpiper
 Sardine
 Scorpion

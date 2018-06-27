@@ -300,73 +300,73 @@ Erratic
 Ethereal
 Evanescent
 Evasive
-Even excellent excited
-Exciting exclusive
+Evenexcellentexcited
+Excitingexclusive
 Exotic
 Expensive
-Extra-large extra-small exuberant
+Extra-largeextra-smallexuberant
 Exultant
 Fabulous
 Faded
-Faint fair
+Faintfair
 Faithful
 Fallacious
-False familiar famous
+Falsefamiliarfamous
 Fanatical
 Fancy
 Fantastic
 Far
- far-flung
- fascinated
+far-flung
+fascinated
 Fast
-Fat faulty
-Fearful fearless
-Feeble feigned
-Female fertile
+Fatfaulty
+Fearfulfearless
+Feeblefeigned
+Femalefertile
 Festive
-Few fierce
+Fewfierce
 Filthy
 Fine
 Finicky
 First
- five
- fixed
- flagrant
+five
+fixed
+flagrant
 Flaky
 Flashy
 Flat
 Flawless
 Flimsy
- flippant
+flippant
 Flowery
 Fluffy
 Fluttering
- foamy
+foamy
 Foolish
 Foregoing
 Forgetful
 Fortunate
-Four frail
+Fourfrail
 Fragile
 Frantic
 Free
- freezing
- frequent
- fresh
- fretful
+freezing
+frequent
+fresh
+fretful
 Friendly
-Frightened frightening full fumbling functional
+Frightenedfrighteningfullfumblingfunctional
 Funny
-Furry furtive
-Future futuristic
-Fuzzy 
+Furryfurtive
+Futurefuturistic
+Fuzzy
 Gabby
 Gainful
 Gamy
 Gaping
 Garrulous
 Gaudy
-General gentle
+Generalgentle
 Giant
 Giddy
 Gifted
@@ -374,7 +374,7 @@ Gigantic
 Glamorous
 Gleaming
 Glib
-Glistening glorious
+Glisteningglorious
 Glossy
 Godly
 Good
@@ -382,19 +382,19 @@ Goofy
 Gorgeous
 Graceful
 Grandiose
-Grateful gratis
-Gray greasy great
+Gratefulgratis
+Graygreasygreat
 Greedy
-Green grey grieving
+Greengreygrieving
 Groovy
 Grotesque
 Grouchy
-Grubby gruesome
+Grubbygruesome
 Grumpy
 Guarded
 Guiltless
-Gullible gusty
-Guttural H habitual
+Gulliblegusty
+GutturalHhabitual
 Half
 Hallowed
 Halting
@@ -412,11 +412,11 @@ Hateful
 Heady
 Healthy
 Heartbreaking
-Heavenly heavy hellish
+Heavenlyheavyhellish
 Helpful
 Helpless
 Hesitant
-Hideous high
+Hideoushigh
 Highfalutin
 High-pitched
 Hilarious
@@ -429,7 +429,7 @@ Homely
 Honorable
 Horrible
 Hospitable
-Hot huge
+Hothuge
 Hulking
 Humdrum
 Humorous
@@ -939,7 +939,7 @@ Teeny-tiny
 Telling
 Temporary
 Ten
-Tender tense
+Tendertense
 Tense
 Tenuous
 Terrible
@@ -1041,7 +1041,6 @@ Vulgar
 Wacky
 Waggish
 Waiting
-
 Wakeful
 Wandering
 Wanting
