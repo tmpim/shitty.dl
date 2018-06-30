@@ -36,22 +36,22 @@
 <div id="container"></div>
 {{#if editor}}
 <div id="buttons">
-	<div class="ui mini icon button clickpopupactivator" data-position="left center"><i class="settings icon"></i></div>
+	<div class="ui mini icon compact button clickpopupactivator" data-position="left center"><i class="settings icon"></i></div>
 	<div class="ui flowing popup transition hidden">
 		<div id="diffToggle" class="ui toggle checkbox">
 		  <input tabindex="0" class="hidden" type="checkbox">
 		  <label>Show Diff</label>
 		</div>
-		<div class="ui mini labeled icon negative button clickpopupactivator" data-position="left center"><i class="trash alternate icon"></i>Discard Changes</div>
+		<div class="ui mini labeled icon negative fluid compact button clickpopupactivator" data-position="left center"><i class="trash alternate icon"></i>Discard&nbspChanges</div>
 		<div class="ui flowing popup transition hidden">
 			<div class="ui mini labeled icon buttons">
 				<div onclick="discardChanges();closePopups()" class="ui negative button"><i class="trash alternate icon"></i>Discard</div>
 				<div onclick="closePopups()" class="ui secondary button"><i class="window close icon"></i>Cancel</div>
 			</div>
 		</div>
-		<div onclick="closePopups()" class="ui mini labeled icon secondary button"><i class="window close icon"></i>Cancel</div>
+		<div onclick="closePopups()" class="ui mini labeled icon fluid compact secondary button"><i class="window close icon"></i>Cancel</div>
 	</div>
-	<div class="ui mini labeled icon button clickpopupactivator" data-position="left center"><i class="edit icon"></i>Save Changes</div>
+	<div class="ui mini labeled icon compact primary button clickpopupactivator" data-position="left center"><i class="edit icon"></i>Save Changes</div>
 	<div class="ui flowing popup transition hidden">
 		<div class="ui mini labeled icon buttons">
 			<div onclick="startEdit('{{nonce}}','{{name}}')" class="ui primary button"><i class="save icon"></i>Save</div>
