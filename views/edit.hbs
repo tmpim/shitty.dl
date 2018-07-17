@@ -64,10 +64,9 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.9/semantic.min.js"></script>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.13.1/min/vs/loader.js"></script>
 <script>
+	var originalRaw	= atob("{{{base64 filecontents}}}");
 
-	var orginalRaw	= atob("{{{base64 filecontents}}}");
-
-	require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.13.1/min/vs' }});
+	require.config({ paths: { "vs": "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.13.1/min/vs" }});
 
 	// Before loading vs/editor/editor.main, define a global MonacoEnvironment that overwrites
 	// the default worker url location (used when creating WebWorkers). The problem here is that
@@ -89,15 +88,15 @@
 	var originalModel;
 	var modifiableModel;
 
-	require(['vs/editor/editor.main'], function() {
-		originalModel = monaco.editor.createModel(orginalRaw, null , monaco.Uri.parse("o{{name}}") );
-		modifiableModel = monaco.editor.createModel(orginalRaw, null , monaco.Uri.parse("m{{name}}") );
-		editor = monaco.editor.create(document.getElementById('container'), {
+	require(["vs/editor/editor.main"], function() {
+		originalModel = monaco.editor.createModel(originalRaw, null , monaco.Uri.parse("o{{name}}") );
+		modifiableModel = monaco.editor.createModel(originalRaw, null , monaco.Uri.parse("m{{name}}") );
+		editor = monaco.editor.create(document.getElementById("container"), {
 			model: modifiableModel,
 			{{#unless  editor}}
 			readOnly: true,
 			{{/unless}}
-			theme: 'vs-dark'
+			theme: "vs-dark"
 		});
 	});
 
@@ -112,17 +111,17 @@
 		.append($(`<input type="hidden" name="file" value= "${file}">`))
 		.appendTo($(document.body))
 		.submit();
-	};
+	}
 
 	function discardChanges() {
-		modifiableModel.setValue(orginalRaw);
-	};
+		modifiableModel.setValue(originalRaw);
+	}
 
 	function setDiffMode(val) {
 		if (val) {
 			editor.dispose();
-			editorDiff = monaco.editor.createDiffEditor(document.getElementById('container'), {
-				theme: 'vs-dark'
+			editorDiff = monaco.editor.createDiffEditor(document.getElementById("container"), {
+				theme: "vs-dark"
 			});
 			editorDiff.setModel({
 				original: originalModel,
@@ -130,21 +129,21 @@
 			});
 		} else {
 			editorDiff.dispose();
-			editor = monaco.editor.create(document.getElementById('container'), {
+			editor = monaco.editor.create(document.getElementById("container"), {
 				model: modifiableModel,
-				theme: 'vs-dark'
+				theme: "vs-dark"
 			});
 		}
-	};
+	}
 
 	function closePopups() {
-		$('.clickpopupactivator').popup('hide');
-	};
+		$(".clickpopupactivator").popup("hide");
+	}
 
 	$(function() {
 		$(".clickpopupactivator").popup({
 			inline: true,
-			on: 'click'
+			on: "click"
 		});
 
 		$('#diffToggle').checkbox({
