@@ -2,13 +2,13 @@
 <html>
 <head>
 	<title>{{ name }}</title>
-	
+
 	<link href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.9/semantic.min.css" rel="stylesheet">
 
 	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 	<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	
+
 	<style>
 		body, html {
 			width: 100%;
@@ -24,7 +24,7 @@
 			min-height: 100vh;
 			border:1px solid grey;
 		}
-		
+
 		#buttons {
 			position: absolute;
 			bottom: 15px;
@@ -38,18 +38,18 @@
 <div id="buttons">
 	<div class="ui mini icon compact button clickpopupactivator" data-position="left center"><i class="settings icon"></i></div>
 	<div class="ui flowing popup transition hidden">
-		<div id="diffToggle" class="ui toggle checkbox">
+		<div id="diffToggle" class="ui toggle checkbox" style="margin-bottom: 0.5rem">
 		  <input tabindex="0" class="hidden" type="checkbox">
 		  <label>Show Diff</label>
 		</div>
-		<div class="ui mini labeled icon negative fluid compact button clickpopupactivator" data-position="left center"><i class="trash alternate icon"></i>Discard&nbspChanges</div>
+		<div class="ui mini labeled icon negative fluid compact top attached button clickpopupactivator" data-position="left center"><i class="trash alternate icon"></i>Discard&nbspChanges</div>
 		<div class="ui flowing popup transition hidden">
 			<div class="ui mini labeled icon buttons">
 				<div onclick="discardChanges();closePopups()" class="ui negative button"><i class="trash alternate icon"></i>Discard</div>
 				<div onclick="closePopups()" class="ui secondary button"><i class="window close icon"></i>Cancel</div>
 			</div>
 		</div>
-		<div onclick="closePopups()" class="ui mini labeled icon fluid compact secondary button"><i class="window close icon"></i>Cancel</div>
+		<div onclick="closePopups()" class="ui mini labeled icon fluid compact secondary bottom attached button"><i class="window close icon"></i>Cancel</div>
 	</div>
 	<div class="ui mini labeled icon compact primary button clickpopupactivator" data-position="left center"><i class="edit icon"></i>Save Changes</div>
 	<div class="ui flowing popup transition hidden">
@@ -66,7 +66,7 @@
 <script>
 
 	var orginalRaw	= atob("{{{base64 filecontents}}}");
-	
+
 	require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.13.1/min/vs' }});
 
 	// Before loading vs/editor/editor.main, define a global MonacoEnvironment that overwrites
@@ -83,12 +83,12 @@
 		)}`;
 		}
 	};
-	
+
 	var editor;
 	var editorDiff;
 	var originalModel;
 	var modifiableModel;
-	
+
 	require(['vs/editor/editor.main'], function() {
 		originalModel = monaco.editor.createModel(orginalRaw, null , monaco.Uri.parse("o{{name}}") );
 		modifiableModel = monaco.editor.createModel(orginalRaw, null , monaco.Uri.parse("m{{name}}") );
@@ -100,11 +100,11 @@
 			theme: 'vs-dark'
 		});
 	});
-	
+
 	window.onresize = function () {
 		editor.layout();
 	};
-	
+
 	function startEdit(nonce, name) {
 		let file = btoa(modifiableModel.getValue());
 		$('<form action="{{pathname}}edit" method="POST"/>')
@@ -113,11 +113,11 @@
 		.appendTo($(document.body))
 		.submit();
 	};
-	
+
 	function discardChanges() {
 		modifiableModel.setValue(orginalRaw);
 	};
-	
+
 	function setDiffMode(val) {
 		if (val) {
 			editor.dispose();
@@ -136,17 +136,17 @@
 			});
 		}
 	};
-		
+
 	function closePopups() {
 		$('.clickpopupactivator').popup('hide');
 	};
-	
+
 	$(function() {
 		$(".clickpopupactivator").popup({
 			inline: true,
 			on: 'click'
 		});
-		
+
 		$('#diffToggle').checkbox({
 			onChecked: function() {setDiffMode(true);},
 			onUnchecked: function() {setDiffMode(false);}
