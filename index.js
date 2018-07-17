@@ -387,7 +387,7 @@ router.all("/delete/:nonce", (req, res) => {
 });
 
 router.post("/rename", (req, res) => {
-	if ( typeof req.body.nonce === "undefined" || typeof req.body.name === "undefined" || typeof noncesLookup[req.body.nonce] === "undefined" ) return error(req, res, "No file specified.");
+	if (typeof req.body.nonce === "undefined" || typeof req.body.name === "undefined" || typeof noncesLookup[req.body.nonce] === "undefined") return error(req, res, "No file specified.");
 
 	if (!req.session || !req.session.authed) {
 		if (!req.body.password) return error(req, res, "No password specified.");
@@ -410,7 +410,7 @@ router.post("/rename", (req, res) => {
 });
 
 router.post("/edit", (req, res) => {
-	if ( typeof req.body.nonce === "undefined" || typeof req.body.file === "undefined" || typeof noncesLookup[req.body.nonce] === "undefined" ) return error(req, res, "No file specified.");
+	if (typeof req.body.nonce === "undefined" || typeof req.body.file === "undefined" || typeof noncesLookup[req.body.nonce] === "undefined") return error(req, res, "No file specified.");
 
 	if (!req.session || !req.session.authed) {
 		if (!req.body.password) return error(req, res, "No password specified.");
@@ -425,9 +425,10 @@ router.post("/edit", (req, res) => {
 
 	fs.writeFile(`${filePath}`, fileContents, (err) => {
 		if (err) {
-				   error(req, res, "Edit failed.");
-				   return console.log(JSON.stringify(err));
+      error(req, res, "Edit failed.");
+			return console.log(JSON.stringify(err));
 		}
+
 		success(req, res, `File ${fileName} edited successfuly`);
 	});
 });
@@ -464,21 +465,19 @@ router.get("/paste/:file", (req, res) => {
 });
 
 router.get("/edit/:file", (req, res) => {
-	
 	let editor = true;
 	if (!req.session || !req.session.authed) {
-		if (!req.body.password) {editor = undefined}
+		if (!req.body.password) editor = undefined;
 		else if (crypto.createHash("sha256").update(req.body.password).digest("hex") !== config.password) return error(req, res, "Incorrect password.");
 	}
-	
+
 	const filename = sanitizeFilename(req.params.file);
 	const filePath = path.join(config.imagePath, filename);
-	const ext = path.extname(filePath)
 
 	if (!filePath) return res.status(404).send("File not found");
 
 	try {
-		if (!fs.existsSync(filePath))  return res.status(404).send("File not found");
+		if (!fs.existsSync(filePath)) return res.status(404).send("File not found");
 		const stats = fs.statSync(filePath);
 
 		//console.log(stats);
