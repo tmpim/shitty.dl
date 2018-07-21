@@ -35,7 +35,7 @@ Make a file called `config.json`, with the following properties:
 - `password` - The sha256 hash of your password. Calculate with `echo -n 'password' | sha256sum`
 - `imagePath` - The absolute path to your image storage directory.
 - `url` - The full URL of your host to be prepended to image paths. Trailing slash required.
-- `listen` The port or unix sock to listen to.
+- `listen` The port or unix sock to listen to. Can also be options object as [defined here](https://nodejs.org/api/net.html#net_server_listen_options_callback)
 - `fileLength` Amount of characters in generated filenames. Default is 4.
 - `pasteThemePath` Location of a theme for the paste syntax highlighter.
 - `oldPasteThemeCompatibility` Mode that enables compatibility with older Atom themes. **NOTE: For the time being, you must run `sed -i "s/atom-text-editor/.editor/g" stylesheet.css` if you aren't using an older atom theme**
