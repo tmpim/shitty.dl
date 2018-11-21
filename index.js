@@ -80,9 +80,15 @@ if (!config.sessionSecret) {
 	process.exit(0);
 }
 
-if (!config.password.match(/^[0-9a-f]{64}$/i)) {
-	console.error("Password does not look like an sha256 hash. Read the damn docs");
-	process.exit(0);
+if (typeof config.password === "string") {
+	config.password = [config.password];
+}
+
+for (const password of config.password) {
+	if (!password.match(/^[0-9a-f]{64}$/i)) {
+		console.error("Password does not look like an sha256 hash. Read the damn docs");
+		process.exit(0);
+	}
 }
 
 if (highlighter && config.languagePackages) {
@@ -207,6 +213,11 @@ function flushNonces() {
 	fs.writeFile("nonces.json", JSON.stringify(nonces), () => {});
 }
 
+function checkPassword(password) {
+	const passwordHash = crypto.createHash("sha256").update(password).digest("hex");
+	return config.password.includes(passwordHash);
+}
+
 app.use(promBundle({
 	includeMethod: true,
 	includePath: true,
@@ -236,7 +247,7 @@ router.get(["/", "/home"], (req, res) => {
 
 router.post("/login", (req, res) => {
 	if (!req.body.password) return error(req, res, "No password specified.");
-	if (crypto.createHash("sha256").update(req.body.password).digest("hex") !== config.password) return error(req, res, "Incorrect password.");
+	if (!checkPassword(req.body.password)) return error(req, res, "Incorrect password.");
 
 	req.session.authed = true;
 	req.session.save();
@@ -257,7 +268,7 @@ router.post("/upload", (req, res) => {
 
 	if (!req.session || !req.session.authed) {
 		if (!req.body.password) return error(req, res, "No password specified.");
-		if (crypto.createHash("sha256").update(req.body.password).digest("hex") !== config.password) return error(req, res, "Incorrect password.");
+		if (!checkPassword(req.body.password)) return error(req, res, "Incorrect password.");
 	}
 
 	let file;
@@ -371,7 +382,7 @@ router.all("/delete/:nonce", (req, res) => {
 
 	if (!config.uploadDeleteLink && ( !req.session || !req.session.authed ) ) {
 		if (!req.body.password) return error(req, res, "No password specified.");
-		if (crypto.createHash("sha256").update(req.body.password).digest("hex") !== config.password) return error(req, res, "Incorrect password.");
+		if (!checkPassword(req.body.password)) return error(req, res, "Incorrect password.");
 	}
 
 	const filePath = noncesLookup[req.params.nonce];
@@ -391,7 +402,7 @@ router.post("/rename", (req, res) => {
 
 	if (!req.session || !req.session.authed) {
 		if (!req.body.password) return error(req, res, "No password specified.");
-		if (crypto.createHash("sha256").update(req.body.password).digest("hex") !== config.password) return error(req, res, "Incorrect password.");
+		if (!checkPassword(req.body.password)) return error(req, res, "Incorrect password.");
 	}
 
 	const filePath = noncesLookup[req.body.nonce];
@@ -414,7 +425,7 @@ router.post("/edit", (req, res) => {
 
 	if (!req.session || !req.session.authed) {
 		if (!req.body.password) return error(req, res, "No password specified.");
-		if (crypto.createHash("sha256").update(req.body.password).digest("hex") !== config.password) return error(req, res, "Incorrect password.");
+		if (!checkPassword(req.body.password)) return error(req, res, "Incorrect password.");
 	}
 
 	const filePath = noncesLookup[req.body.nonce];
@@ -468,7 +479,7 @@ router.get("/edit/:file", (req, res) => {
 	let editor = true;
 	if (!req.session || !req.session.authed) {
 		if (!req.body.password) editor = undefined;
-		else if (crypto.createHash("sha256").update(req.body.password).digest("hex") !== config.password) return error(req, res, "Incorrect password.");
+		else if (!checkPassword(req.body.password)) return error(req, res, "Incorrect password.");
 	}
 
 	const filename = sanitizeFilename(req.params.file);
