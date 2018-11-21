@@ -13,7 +13,9 @@ Make a file called `config.json`, with the following properties:
     "name_color": "#a5673f",
     "title": "lemmmy's file host lies here",
     "disclaimer": "for dmca etc., contact drew at lemmmy dot pw",
-    "password": "",
+    "password": [
+        ""
+    ],
     "imagePath": "/path/to/images",
     "url": "https://your.host/",
     "listen": "3000",
@@ -21,7 +23,7 @@ Make a file called `config.json`, with the following properties:
     "pasteThemePath": "https://atom.github.io/highlights/examples/atom-dark.css",
     "oldPasteThemeCompatibility": true,
     "sessionSecret": "",
-	"uploadDeleteLink": true,
+    "uploadDeleteLink": true,
     "languagePackages": [
       "language-lua"
     ]
@@ -32,7 +34,7 @@ Make a file called `config.json`, with the following properties:
 - `name_color` - Color of your file host's name.
 - `title` - Title on the homepage.
 - `disclaimer` - Message used to supply important info about takedowns/dmcas, or a disclaimer.
-- `password` - The sha256 hash of your password. Calculate with `echo -n 'password' | sha256sum`
+- `password` - An array of sha256 hashes of valid passwords. Calculate with `echo -n 'password' | sha256sum`
 - `imagePath` - The absolute path to your image storage directory.
 - `url` - The full URL of your host to be prepended to image paths. Trailing slash required.
 - `listen` The port or unix sock to listen to. Can also be options object as [defined here](https://nodejs.org/api/net.html#net_server_listen_options_callback)
