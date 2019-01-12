@@ -15,6 +15,7 @@ const bb = require("express-busboy");
 const handlebars = require("express-handlebars");
 const promBundle = require("express-prom-bundle");
 const session = require("express-session");
+const FileStore = require('session-file-store')(session);
 const helpers = require("handlebars-helpers")();
 const dateformat = require("helper-dateformat");
 const Finder = require("fs-finder");
@@ -122,9 +123,10 @@ app.engine(".hbs", handlebars({
 app.set("view engine", ".hbs");
 app.use(session({
 	secret: config.sessionSecret,
-	cookie: {},
+	cookie: {maxAge: 2628000000},
+	store: new FileStore({}),
 	resave: false,
-	saveUninitialized: true
+	saveUninitialized: false
 }));
 
 bb.extend(app, {
