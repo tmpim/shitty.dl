@@ -6,6 +6,7 @@
 
 	<link href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.9/semantic.min.css" rel="stylesheet">
 	<link href="https://cdn.rawgit.com/mdehoog/Semantic-UI-Calendar/76959c6f7d33a527b49be76789e984a0a407350b/dist/calendar.min.css" rel="stylesheet" type="text/css" />
+	<link rel="manifest" href="{{pathname}}manifest.json">
 
 	<style>
 		body {
@@ -70,6 +71,10 @@
 
 	$(function() {
 
+		if ('serviceWorker' in navigator) {
+		  navigator.serviceWorker.register('{{pathname}}service-worker.js');
+		};
+		
 		$("img.lazy").lazyload({
 			effect: "fadeIn"
 		});
@@ -83,7 +88,8 @@
 
 		$(".alertable").on( "click", function(e) {
 			e.preventDefault();
-			alert($(this)[0].href); /* This realy should be something nicer then alert. Dunno what ;p */
+			copyToClipboard($(this)[0].href);
+			alert("Link copied to clipboard."); /* This realy should be something nicer then alert. Dunno what v2 ;p */
 		});
 
 		$.event.special.swipe.durationThreshold = 100;

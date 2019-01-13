@@ -107,6 +107,37 @@ if (!fs.existsSync(`${config.imagePath}/.deleted`)){
     fs.mkdirSync(`${config.imagePath}/.deleted`);
 }
 
+fs.writeFileSync("public/manifest.json", JSON.stringify({
+  "short_name": "Shitty",
+  "name": config.name,
+  "share_target": {
+    "action": "upload",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  },
+  "description": config.title,
+  "icons": [
+    {
+      "src": "poop192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "poop512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "start_url": "upload",
+  "scope": "upload",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "theme_color": config.name_color
+}));
+
 app.engine(".hbs", handlebars({
 	defaultLayout: "main",
 	extname: ".hbs",
@@ -143,7 +174,7 @@ function error(req, res, error) {
 	if (req.xhr || req.headers.accept.indexOf('json') > -1) {
 		res.json({ ok: false, error });
 	} else {
-		res.render("error", { errorText: error });
+		res.render("error", { config: _.omit(config, ["password", "sessionSecret"]), errorText: error, pathname });
 	}
 }
 
@@ -151,7 +182,7 @@ function success(req, res, success) {
 	if (req.xhr || req.headers.accept.indexOf('json') > -1) {
 		res.json({ ok: true, success });
 	} else {
-		res.render("success", { successText: success });
+		res.render("success", { config: _.omit(config, ["password", "sessionSecret"]), successText: success, pathname });
 	}
 }
 
@@ -466,6 +497,7 @@ router.get("/paste/:file", (req, res) => {
 			: "<pre class='editor'>" + _.escape(fs.readFileSync(filePath).toString()) + "</pre>";
 
 		res.render("paste", {
+			config: _.omit(config, ["password", "sessionSecret"]),
 			paste: html,
 			style: config.pasteThemePath || "https://atom.github.io/highlights/examples/atom-dark.css",
 			name: filename,
@@ -501,6 +533,7 @@ router.get("/edit/:file", (req, res) => {
 		const filecontents = fs.readFileSync(filePath, { encoding: "utf8" });
 
 		res.render("edit", {
+			config: _.omit(config, ["password", "sessionSecret"]),
 			filecontents,
 			name: filename,
 			nonce: nonces[filePath],
@@ -575,6 +608,7 @@ function fileListing(mask, pageTemplate, route, req, res) {
 	flushNonces();
 
 	res.render(pageTemplate, {
+		config: _.omit(config, ["password", "sessionSecret"]),
 		route,
 		pageTemplate,
 		query: url.parse(req.url).query,
