@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY . .
 RUN apk update
-RUN apk add build-base python3-dev
-RUN npm install --only=production
+RUN apk add build-base python2-dev
+RUN PYTHON=python2 npm install --only=production
 
 CMD [ "node", "index.js" ]
