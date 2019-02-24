@@ -8,6 +8,9 @@
   },
   "author": "",
   "license": "SEE LICENSE IN LICENCE",
+  "bin": {
+    "shittydl": "./cli.js"
+  },
   "dependencies": {
     "coderain": "^1.1.0",
     "es6-promisify": "^5.0.0",

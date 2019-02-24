@@ -1,6 +1,6 @@
 # shitty.download
 
-A lightweight file hosting server in node.js, AKA the backend behind shitty.download. 
+A lightweight file hosting server in node.js, AKA the backend behind shitty.download.
 
 ## Configuration
 
