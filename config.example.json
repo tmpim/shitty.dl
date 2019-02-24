@@ -16,6 +16,8 @@
     "sessionSecret": "",
     "uploadDeleteLink": true,
     "languagePackages": [
-      "language-lua"
-    ]
+      "language-lua",
+      "/path/to/language/package"
+    ],
+    "customName": "/path/to/custom-name.js"
 }

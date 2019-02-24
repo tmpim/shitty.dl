@@ -1,6 +1,6 @@
 # shitty.download
 
-The backend behind shitty.download.
+A lightweight file hosting server in node.js, AKA the backend behind shitty.download. 
 
 ## Configuration
 
@@ -25,8 +25,10 @@ Make a file called `config.json`, with the following properties:
     "sessionSecret": "",
     "uploadDeleteLink": true,
     "languagePackages": [
-      "language-lua"
-    ]
+      "language-lua",
+      "/path/to/language/package"
+    ],
+    "customName": "/path/to/custom-name.js"
 }
 ```
 - `logo` - Filename of your logo image. Make sure to put this in /public.
@@ -40,14 +42,16 @@ Make a file called `config.json`, with the following properties:
 - `listen` The port or unix sock to listen to. Can also be options object as [defined here](https://nodejs.org/api/net.html#net_server_listen_options_callback)
 - `fileLength` Amount of characters in generated filenames. Default is 4.
 - `pasteThemePath` Location of a theme for the paste syntax highlighter.
-- `oldPasteThemeCompatibility` Mode that enables compatibility with older Atom themes. **NOTE: For the time being, you must run `sed -i "s/atom-text-editor/.editor/g" stylesheet.css` if you aren't using an older atom theme**
+- `oldPasteThemeCompatibility` Mode that enables compatibility with older Atom themes.
+  - **NOTE: For the time being, you must run `sed -i "s/atom-text-editor/.editor/g" stylesheet.css` if you aren't using an older atom theme**
 - `sessionSecret` Secret for session storage. Should be a secure random string.
 - `uploadDeleteLink` If set to `true`, files uploaded via the API will contain a deletion link. Else, the password or logging in will be required to delete files.
 - `languagePackages` Array of npm package names containing atom language grammars.
+- `customName` Path to or npm package name of custom naming function.
 
 ## Custom names
 
-You can implement your own custom naming function by creating a file called `custom-name.js` that exports a function that returns a filename. Here is an example:
+You can implement your own custom naming function by pointing `customName` in the config to a javascript file or npm package that exports a function that returns a filename. Here is an example:
 
 ```js
 const _ = require("lodash");
