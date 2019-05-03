@@ -18,6 +18,12 @@
 									<img class="lazy" data-original="{{@root.pathname}}{{@root.config.logo}}">
 								</a>
 							</video>
+							{{else if audio}}
+							<audio controls preload='metadata' src="{{@root.pathname}}{{name}}">
+								<a href="{{@root.pathname}}{{name}}" class="image">
+									<img class="lazy" data-original="{{@root.pathname}}{{@root.config.logo}}">
+								</a>
+							</audio>
 							{{else}}
 							<a href="{{@root.pathname}}{{name}}" class="image">
 								<img class="lazy" data-original="{{@root.pathname}}{{name}}">

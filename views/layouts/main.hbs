@@ -85,7 +85,7 @@
 		};
 		
 		if ('serviceWorker' in navigator) {
-			navigator.serviceWorker.register('{{pathname}}service-worker.js');
+			navigator.serviceWorker.register('{{pathname}}service-worker.js', {scope: './'});
 		};
 		
 		$("img.lazy").lazyload({

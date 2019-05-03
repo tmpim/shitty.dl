@@ -1,6 +1,8 @@
 const package = require("./package.json");
 const version = package.version;
 const config = require(process.argv[2] || "./config.json");
+config.url = config.url.replace(/\/?$/, "/")
+config.imagePath = config.imagePath.replace(/\/?$/, "/")
 
 const _ = require("lodash");
 
@@ -57,7 +59,10 @@ if (fs.existsSync("custom-name.js")) {
 }
 
 if (fs.existsSync("stats.json")) {
-	statCache = JSON.parse(fs.readFileSync("stats.json"));
+	try {
+		statCache = JSON.parse(fs.readFileSync("stats.json"));
+	} catch(error) { console.error('stats.json file was corrupted and has been regenerated. Please merge your backup with current one.'); statCache = {version}; }
+
 	if (statCache.version !== version) statCache = { version }; /* note: remember to change version every time stats.json format changes */
 	else {
 		_.forOwn(statCache, (value, key) => {
@@ -68,7 +73,10 @@ if (fs.existsSync("stats.json")) {
 }
 
 if (fs.existsSync("nonces.json")) {
-	nonces = JSON.parse(fs.readFileSync("nonces.json"));
+	try {
+		nonces = JSON.parse(fs.readFileSync("nonces.json"));
+	} catch(error) { console.error('nonces.json file was corrupted and has been regenerated. Please merge your backup with current one.'); nonces = {}; }
+
 	_.forOwn(nonces, (value, key) => {
 		noncesLookup[nonces[key]] = key;
 	});
@@ -111,11 +119,19 @@ fs.writeFileSync("public/manifest.json", JSON.stringify({
   "short_name": "Shitty",
   "name": config.name,
   "share_target": {
-    "action": "upload",
+    "action": "webshareupload",
+    "method": "POST",
+    "enctype": "multipart/form-data",
     "params": {
-      "title": "title",
-      "text": "text",
-      "url": "url"
+      "title": "sharetitle",
+      "text": "sharetext",
+      "url": "shareurl",
+      "files": [
+        {
+          "name": "file",
+          "accept": ["*/*"]
+        }
+      ]
     }
   },
   "description": config.title,
@@ -131,8 +147,8 @@ fs.writeFileSync("public/manifest.json", JSON.stringify({
       "type": "image/png"
     }
   ],
-  "start_url": "upload",
-  "scope": "upload",
+  "start_url": "webshareupload",
+  "scope": "webshareupload",
   "background_color": "#ffffff",
   "display": "standalone",
   "theme_color": config.name_color
@@ -154,7 +170,7 @@ app.engine(".hbs", handlebars({
 app.set("view engine", ".hbs");
 app.use(session({
 	secret: config.sessionSecret,
-	cookie: {maxAge: 2628000000},
+	cookie: {maxAge: 2*31*24*60*60*1000},
 	store: new FileStore({}),
 	resave: false,
 	saveUninitialized: false
@@ -288,7 +304,7 @@ router.post("/login", (req, res) => {
 	res.redirect(pathname+"gallery");
 });
 
-router.get("/upload", auth, (req, res) => {
+router.get(["/upload","/webshareupload"], auth, (req, res) => {
 	res.render("upload", {
 		config: _.omit(config, ["password", "sessionSecret"]),
 		pageTemplate: "upload",
@@ -296,7 +312,7 @@ router.get("/upload", auth, (req, res) => {
 	});
 });
 
-router.post("/upload", (req, res) => {
+router.post(["/upload","/webshareupload"], (req, res) => {
 	if ( typeof req.body.link === "undefined" && typeof req.body.file === "undefined" && (!req.files || !req.files.file)) return error(req, res, "No file/URL specified.");
 
 	if (!req.session || !req.session.authed) {
@@ -355,13 +371,13 @@ router.post("/upload", (req, res) => {
 			flushNonces();
 			name = "l/" + name;
 
-			if (req.body.online === "yes") {
+			if (req.path === "/webshareupload") {
 				success(req, res, `URL shortened to <a href="${config.url}${name}">"${config.url}${name}"</a>` );
 			} else {
 				res.json({
 					ok: true,
-					url: `${config.url.replace(/\/?$/, "/")}${name}`,
-					deleteUrl: config.uploadDeleteLink ? `${config.url.replace(/\/?$/, "/")}delete/${nonce}` : undefined
+					url: `${config.url}${name}`,
+					deleteUrl: config.uploadDeleteLink ? `${config.url}delete/${nonce}` : undefined
 				});
 			}
 		});
@@ -374,13 +390,15 @@ router.post("/upload", (req, res) => {
 			let nonce = generateNonce(`${config.imagePath}/${name}${ext}`);
 			flushNonces();
 
-			if (req.body.online === "yes") {
+			if (req.path === "/webshareupload") {
+				success(req, res, `${config.url}${name}${ext}` );
+			} else if (req.body.online === "yes") {
 				res.redirect(`${config.url}${name}${ext}`);
 			} else {
 				res.json({
 					ok: true,
-					url: `${config.url.replace(/\/?$/, "/")}${name}${ext}`,
-					deleteUrl: config.uploadDeleteLink ? `${config.url.replace(/\/?$/, "/")}delete/${nonce}` : undefined
+					url: `${config.url}${name}${ext}`,
+					deleteUrl: config.uploadDeleteLink ? `${config.url}delete/${nonce}` : undefined
 				});
 			}
 		});
@@ -397,13 +415,15 @@ router.post("/upload", (req, res) => {
 				name = "paste/" + name;
 			}
 
-			if (req.body.online === "yes") {
+			if (req.path === "/webshareupload") {
+				success(req, res, `${config.url}${name}${ext}` );
+			} else if (req.body.online === "yes") {
 				res.redirect(`${config.url}${name}${ext}`);
 			} else {
 				res.json({
 					ok: true,
-					url: `${config.url.replace(/\/?$/, "/")}${name}${ext}`,
-					deleteUrl: config.uploadDeleteLink ? `${config.url.replace(/\/?$/, "/")}delete/${nonce}` : undefined
+					url: `${config.url}${name}${ext}`,
+					deleteUrl: config.uploadDeleteLink ? `${config.url}delete/${nonce}` : undefined
 				});
 			}
 		});
@@ -592,6 +612,7 @@ function fileListing(mask, pageTemplate, route, req, res) {
 		const o = {
 			name: path.relative(config.imagePath, f),
 			video: ( ext == ".mp4" || ext == ".webm" ? 1 : undefined), /* undefined is not saved into JSON */
+			audio: ( ext == ".mp3" || ext == ".wav" || ext == ".flac" ? 1 : undefined), /* undefined is not saved into JSON */
 			size: stat.size,
 			mtime: stat.mtime,
 			mtimeSave: stat.mtime.toString(),
@@ -619,7 +640,7 @@ function fileListing(mask, pageTemplate, route, req, res) {
 	});
 }
 
-router.get("/gallery/:page?", auth, (req, res) => fileListing("*.<(jpeg|jpg|png|gif|mp4|webm)$>", "gallery", pathname+"gallery", req, res));
+router.get("/gallery/:page?", auth, (req, res) => fileListing("*.<(jpeg|jpg|png|gif|mp4|webm|mp3|wav|flac)$>", "gallery", pathname+"gallery", req, res));
 router.get("/list/:page?", auth, (req, res) => fileListing("*", "list", pathname+"list", req, res));
 router.get("/links/:page?", auth, (req, res) => fileListing("<^[^.]+$>", "links", pathname+"links", req, res));
 

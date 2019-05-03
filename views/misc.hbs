@@ -6,6 +6,11 @@
 			</div>
 			<div class="ui content center aligned">
 				<div id="install" class="ui positive button disabled" onclick="runInstall()">Instal Shitty as Share Target</div>
+				<div class="ui primary button" onclick="Notification.requestPermission()">Add Share Target Notifications</div>
+			</div>
+			<div id="debug"  class="ui content center aligned" style="display: none;">
+				<div class="ui button" onclick="navigator.serviceWorker.controller.postMessage('debug');">Test</div>
+				<div class="ui button" onclick="navigator.serviceWorker.controller.postMessage('debug2');">Test2</div>
 			</div>
 			<div class="ui content center aligned">
 				<div class="ui action input">
@@ -91,7 +96,17 @@
 	};
 	
 	$(function() {
-
+		let k = '38384040373937396665'
+		let i = ''
+		$(document).keyup((e) => {
+			i+=(""+e.which);
+			if (i===k) {$("#debug").show();}
+			if (!k.indexOf(i)) return;
+			i = ("" + e.which);
+		})
+		$("#pas").change((e) => {
+			if (e.target.value === "debug") {$("#debug").show();}
+		})
 	});
 </script>
 {{/section}}
