@@ -80,9 +80,15 @@ if (!config.sessionSecret) {
 	process.exit(0);
 }
 
-if (!config.password.match(/^[0-9a-f]{64}$/i)) {
-	console.error("Password does not look like an sha256 hash. Read the damn docs");
-	process.exit(0);
+if (typeof config.password === "string") {
+	config.password = [config.password];
+}
+
+for (const password of config.password) {
+	if (!password.match(/^[0-9a-f]{64}$/i)) {
+		console.error("Password does not look like an sha256 hash. Read the damn docs");
+		process.exit(0);
+	}
 }
 
 if (highlighter && config.languagePackages) {
@@ -109,7 +115,8 @@ app.engine(".hbs", handlebars({
 			if(!this._sections) this._sections = {};
 			this._sections[name] = options.fn(this);
 			return null;
-		}
+		},
+		base64: data => Buffer.from(data).toString("base64")
 	})
 }));
 app.set("view engine", ".hbs");
@@ -206,6 +213,11 @@ function flushNonces() {
 	fs.writeFile("nonces.json", JSON.stringify(nonces), () => {});
 }
 
+function checkPassword(password) {
+	const passwordHash = crypto.createHash("sha256").update(password).digest("hex");
+	return config.password.includes(passwordHash);
+}
+
 app.use(promBundle({
 	includeMethod: true,
 	includePath: true,
@@ -235,7 +247,7 @@ router.get(["/", "/home"], (req, res) => {
 
 router.post("/login", (req, res) => {
 	if (!req.body.password) return error(req, res, "No password specified.");
-	if (crypto.createHash("sha256").update(req.body.password).digest("hex") !== config.password) return error(req, res, "Incorrect password.");
+	if (!checkPassword(req.body.password)) return error(req, res, "Incorrect password.");
 
 	req.session.authed = true;
 	req.session.save();
@@ -256,7 +268,7 @@ router.post("/upload", (req, res) => {
 
 	if (!req.session || !req.session.authed) {
 		if (!req.body.password) return error(req, res, "No password specified.");
-		if (crypto.createHash("sha256").update(req.body.password).digest("hex") !== config.password) return error(req, res, "Incorrect password.");
+		if (!checkPassword(req.body.password)) return error(req, res, "Incorrect password.");
 	}
 
 	let file;
@@ -370,7 +382,7 @@ router.all("/delete/:nonce", (req, res) => {
 
 	if (!config.uploadDeleteLink && ( !req.session || !req.session.authed ) ) {
 		if (!req.body.password) return error(req, res, "No password specified.");
-		if (crypto.createHash("sha256").update(req.body.password).digest("hex") !== config.password) return error(req, res, "Incorrect password.");
+		if (!checkPassword(req.body.password)) return error(req, res, "Incorrect password.");
 	}
 
 	const filePath = noncesLookup[req.params.nonce];
@@ -386,11 +398,11 @@ router.all("/delete/:nonce", (req, res) => {
 });
 
 router.post("/rename", (req, res) => {
-	if ( typeof req.body.nonce === "undefined" || typeof req.body.name === "undefined" || typeof noncesLookup[req.body.nonce] === "undefined" ) return error(req, res, "No file specified.");
+	if (typeof req.body.nonce === "undefined" || typeof req.body.name === "undefined" || typeof noncesLookup[req.body.nonce] === "undefined") return error(req, res, "No file specified.");
 
 	if (!req.session || !req.session.authed) {
 		if (!req.body.password) return error(req, res, "No password specified.");
-		if (crypto.createHash("sha256").update(req.body.password).digest("hex") !== config.password) return error(req, res, "Incorrect password.");
+		if (!checkPassword(req.body.password)) return error(req, res, "Incorrect password.");
 	}
 
 	const filePath = noncesLookup[req.body.nonce];
@@ -408,6 +420,30 @@ router.post("/rename", (req, res) => {
 	});
 });
 
+router.post("/edit", (req, res) => {
+	if (typeof req.body.nonce === "undefined" || typeof req.body.file === "undefined" || typeof noncesLookup[req.body.nonce] === "undefined") return error(req, res, "No file specified.");
+
+	if (!req.session || !req.session.authed) {
+		if (!req.body.password) return error(req, res, "No password specified.");
+		if (!checkPassword(req.body.password)) return error(req, res, "Incorrect password.");
+	}
+
+	const filePath = noncesLookup[req.body.nonce];
+	const fileName = path.basename(filePath);
+	const fileContents = Buffer.from(req.body.file , 'base64');
+
+	if (!fs.existsSync(filePath)) return error(req, res, "File don't exist");
+
+	fs.writeFile(`${filePath}`, fileContents, (err) => {
+		if (err) {
+      error(req, res, "Edit failed.");
+			return console.log(JSON.stringify(err));
+		}
+
+		success(req, res, `File ${fileName} edited successfuly`);
+	});
+});
+
 router.get("/paste/:file", (req, res) => {
 	const filename = sanitizeFilename(req.params.file);
 	const filePath = path.join(config.imagePath, filename);
@@ -418,7 +454,7 @@ router.get("/paste/:file", (req, res) => {
 		if (!fs.existsSync(filePath))  return res.status(404).send("File not found");
 		const stats = fs.statSync(filePath);
 
-		console.log(stats);
+		//console.log(stats);
 
 		if (!stats.isFile()) return res.status(404).send("File not found");
 		if (stats.size > 2 ** 19) return error(req, res, `File too large (${filesize(stats.size)})`);
@@ -431,6 +467,42 @@ router.get("/paste/:file", (req, res) => {
 			paste: html,
 			style: config.pasteThemePath || "https://atom.github.io/highlights/examples/atom-dark.css",
 			name: filename,
+			pathname,
+			layout: false
+		});
+	} catch (err) {
+		error(req, res, err);
+	}
+});
+
+router.get("/edit/:file", (req, res) => {
+	let editor = true;
+	if (!req.session || !req.session.authed) {
+		if (!req.body.password) editor = undefined;
+		else if (!checkPassword(req.body.password)) return error(req, res, "Incorrect password.");
+	}
+
+	const filename = sanitizeFilename(req.params.file);
+	const filePath = path.join(config.imagePath, filename);
+
+	if (!filePath) return res.status(404).send("File not found");
+
+	try {
+		if (!fs.existsSync(filePath)) return res.status(404).send("File not found");
+		const stats = fs.statSync(filePath);
+
+		//console.log(stats);
+
+		if (!stats.isFile()) return res.status(404).send("File not found");
+		if (stats.size > 2 ** 19) return error(req, res, `File too large (${filesize(stats.size)})`);
+
+		const filecontents = fs.readFileSync(filePath, { encoding: "utf8" });
+
+		res.render("edit", {
+			filecontents,
+			name: filename,
+			nonce: nonces[filePath],
+			editor,
 			pathname,
 			layout: false
 		});
@@ -523,11 +595,23 @@ router.get("/misc", auth, (req, res) => {
 	});
 });
 
-console.log(`Listening on ${config.listen} under path ${pathname}`);
 
 app.use(pathname, router);
-if (typeof config.listen === "string" && isNaN(config.listen)){
-	process.on("exit", () => fs.unlinkSync(config.listen));
-	if (fs.existsSync(config.listen)) fs.unlinkSync(config.listen);
+
+if (typeof config.listen === "object") {
+	if (typeof config.listen.port === "undefined" && typeof config.listen.path === "string" ) {
+		console.log(`Listening on ${config.listen.path} under path ${pathname}`);
+		process.on("exit", () => fs.unlinkSync(config.listen.path));
+		if (fs.existsSync(config.listen.path)) fs.unlinkSync(config.listen.path);
+	} else {
+		console.log(`Listening on ${config.listen.host || ""}:${config.listen.port} under path ${pathname}`);
+	}
+} else {
+	console.log(`Listening on ${config.listen} under path ${pathname}`);
+	if (typeof config.listen === "string" && isNaN(config.listen)){
+		process.on("exit", () => fs.unlinkSync(config.listen));
+		if (fs.existsSync(config.listen)) fs.unlinkSync(config.listen);
+	}
 }
+
 app.listen(config.listen);

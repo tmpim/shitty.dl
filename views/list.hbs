@@ -32,7 +32,8 @@
 									<div class="ui mini icon button clickpopupactivator" data-position="left center"><i class="icon settings"></i></div>
 									<div class="ui flowing popup transition hidden">
 										<div class="ui mini labeled icon buttons">
-											<div onclick="startRename('{{nonce}}','{{name}}')" class="ui button"><i class="edit icon"></i>Rename</div>
+											<a href="{{@root.pathname}}edit/{{name}}" class="ui primary button"><i class="edit icon"></i>Edit</a>
+											<div onclick="startRename('{{nonce}}','{{name}}')" class="ui button"><i class="pencil icon"></i>Rename</div>
 											<div onclick="startDelete('{{nonce}}','{{name}}')" class="ui negative button"><i class="eraser icon"></i>Delete</div>
 										</div>
 									</div>
