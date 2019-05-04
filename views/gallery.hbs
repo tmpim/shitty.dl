@@ -57,3 +57,21 @@
 		</div>
 	</div>
 </div>
+{{#section "script"}}
+<script>
+	function fallbackLoad(t){
+		$.ajax({url: t.attr("data-original"), headers: {"Range": "bytes=0-255"}, success: function(result){
+			t.replaceWith($('<div style="padding: 5%; overflow-wrap:break-word;"></div>').text(result));
+		}});
+	}
+	function detectErrors(e){
+		let target = $(e.target);
+		$("<img />")
+		.on("error",function(){fallbackLoad(target)})
+		.attr("src", target.attr("data-original"));
+	}
+	$(function() {
+		$("img.lazy").one("appear",detectErrors);
+	});
+</script>
+{{/section}}
