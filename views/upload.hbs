@@ -11,12 +11,6 @@
 			<div class="ui content center aligned">
 				<a href="{{pathname}}misc" class="ui fluid basic button">Advanced Upload Options</a>
 			</div>
-			<div id="webshare" class="ui content center aligned" style="display: none;">
-				Query String Parameters:</b><br />
-				title: <code><span id="websharetitle"></span></code><br />
-				text: <code><span id="websharetext"></span></code><br />
-				url: <code><span id="webshareurl"></code></span>
-			</div>
 			<div class="ui content text">
 				<form class="ui basic form segment left aligned" action="{{pathname}}upload" method="post" enctype="multipart/form-data">
 					<div class="field" id="modefield">
@@ -65,13 +59,6 @@
 {{#section "script"}}
 <script>
 	$(function() {
-	
-		if (urlParams.has('title') || urlParams.has('text') || urlParams.has('url')) {
-			$('#websharetitle').text(urlParams.get('title'));
-			$('#websharetext').text(urlParams.get('text'));
-			$('#webshareurl').text(urlParams.get('url'));
-			$('#webshare').show();
-		};
 	
 		$("#fakefile, #filebutton").on("click", function(e) {
 			$("#file").click();
