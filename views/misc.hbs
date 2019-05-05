@@ -26,9 +26,9 @@
 							<div class="header">ShareX Image&File Uploader</div>
 						</div>
 <textarea class="image" readonly style="resize: none; border: none; font-family: monospace" rows=10>{
-  "Name": "{{config.name}} Image&File",
+  "Name": "{{name}} Image&File",
   "DestinationType": "ImageUploader, FileUploader",
-  "RequestURL": "{{config.url}}upload",
+  "RequestURL": "{{url}}upload",
   "FileFormName": "file",
   "Arguments": {
     "password": "SHITTYPASSWORDHERE"
@@ -45,9 +45,9 @@
 							<div class="header">ShareX Text Uploader</div>
 						</div>
 <textarea class="image" readonly style="resize: none; border: none; font-family: monospace" rows=10>{
-  "Name": "{{config.name}} Text",
+  "Name": "{{name}} Text",
   "DestinationType": "TextUploader",
-  "RequestURL": "{{config.url}}upload?paste=true",
+  "RequestURL": "{{url}}upload?paste=true",
   "FileFormName": "file",
   "Arguments": {
     "password": "SHITTYPASSWORDHERE"
@@ -64,9 +64,9 @@
 							<div class="header">ShareX URL Shortener</div>
 						</div>
 <textarea class="image" readonly style="resize: none; border: none; font-family: monospace" rows=10>{
-  "Name": "{{config.name}} URLShortener",
+  "Name": "{{name}} URLShortener",
   "DestinationType": "URLShortener",
-  "RequestURL": "{{config.url}}upload",
+  "RequestURL": "{{url}}upload",
   "Arguments": {
     "password": "SHITTYPASSWORDHERE",
     "link": "$input$"

@@ -1,11 +1,11 @@
-let version = "0.0.19"
+let version = "0.0.20"
 
 function poke(topic,body) {
 	self.registration.showNotification(topic, {
 		body: body,
 		tag: 'webshareupload',
-		badge: new URL("poop96.png",self.registration.scope).toString(),
-		icon: new URL("poop192.png",self.registration.scope).toString(),
+		badge: new URL("logo/96",self.registration.scope).toString(),
+		icon: new URL("logo/192",self.registration.scope).toString(),
 		silent: true,
 	});
 };
@@ -27,7 +27,7 @@ self.addEventListener('notificationclick', function(event) {
 
 self.addEventListener('message', function(event){
 	if (event.data == "debug") { poke("Test Notification",version); }
-	if (event.data == "debug2") { self.registration.showNotification("Test2 Notification", {body: "Hope you are happy now",tag: 'egg',badge: new URL("poop96.png",self.registration.scope).toString(),icon: new URL("poop192.png",self.registration.scope).toString(),vibrate: [500,110,500,110,450,110,200,110,170,40,450,110,200,110,170,40,500]}); }
+	if (event.data == "debug2") { self.registration.showNotification("Test2 Notification", {body: "Hope you are happy now",tag: 'egg',badge: new URL("logo/96",self.registration.scope).toString(),icon: new URL("logo/192",self.registration.scope).toString(),image: new URL("logo/main",self.registration.scope).toString(),vibrate: [500,110,500,110,450,110,200,110,170,40,450,110,200,110,170,40,500]}); }
 });
 
 self.addEventListener('fetch', function(event) {

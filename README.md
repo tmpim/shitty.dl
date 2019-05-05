@@ -8,9 +8,16 @@ Make a file called `config.json`, with the following properties:
 
 ```json
 {
-    "logo": "poop.png",
+    "logo": {
+		"main": "poop.png",
+		"px96": "poop96.png",
+		"px192": "poop192.png",
+		"px512": "poop512.png"
+	},
     "name": "shitty.download",
+	"app_name": "Shitty",
     "name_color": "#a5673f",
+	"background_color": "#dadada",
     "title": "lemmmy's file host lies here",
     "disclaimer": "for dmca etc., contact drew at lemmmy dot pw",
     "password": [
@@ -24,14 +31,19 @@ Make a file called `config.json`, with the following properties:
     "oldPasteThemeCompatibility": true,
     "sessionSecret": "",
     "uploadDeleteLink": true,
+	"imageFiles": ["jpeg","jpg","png","gif"],
+	"audioFiles": ["mp3","wav","flac","ogg"],
+	"videoFiles": ["mp4","webm"],
     "languagePackages": [
       "language-lua"
     ]
 }
 ```
-- `logo` - Filename of your logo image. Make sure to put this in /public.
+- `logo` - Filenames of your logos images. Make sure to put them in /public.
 - `name` - Name of your file host.
+- `app_name` - Shortened name of your file host used in app.
 - `name_color` - Color of your file host's name.
+- `background_color` - Color of your host's background.
 - `title` - Title on the homepage.
 - `disclaimer` - Message used to supply important info about takedowns/dmcas, or a disclaimer.
 - `password` - An array of sha256 hashes of valid passwords. Calculate with `echo -n 'password' | sha256sum`
@@ -43,6 +55,9 @@ Make a file called `config.json`, with the following properties:
 - `oldPasteThemeCompatibility` Mode that enables compatibility with older Atom themes. **NOTE: For the time being, you must run `sed -i "s/atom-text-editor/.editor/g" stylesheet.css` if you aren't using an older atom theme**
 - `sessionSecret` Secret for session storage. Should be a secure random string.
 - `uploadDeleteLink` If set to `true`, files uploaded via the API will contain a deletion link. Else, the password or logging in will be required to delete files.
+- `imageFiles` Array of file extentions that shitty will treat as images.
+- `audioFiles` Array of file extentions that shitty will treat as audio.
+- `videoFiles` Array of file extentions that shitty will treat as video.
 - `languagePackages` Array of npm package names containing atom language grammars.
 
 ## Custom names
