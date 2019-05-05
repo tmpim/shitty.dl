@@ -26,8 +26,11 @@
 			</div>
 			<br/>
 			<label>File search (comma separated)</label><br />
-			<div class="ui field input">
+			<div class="ui field action input mini">
 				<input type="text" placeholder="search" id="filter-search">
+				<div onclick="$('#filter-search').val('{{imageFilesFilter}}')" class="ui mini icon button"><i class="file image outline icon"></i> Image</div>
+				<div onclick="$('#filter-search').val('{{audioFilesFilter}}')" class="ui mini icon button"><i class="file audio outline icon"></i> Audio</div>
+				<div onclick="$('#filter-search').val('{{videoFilesFilter}}')" class="ui mini icon button"><i class="file video outline icon"></i> Video</div>
 			</div>
 			<br/><br/>
 			<button class="ui button" id="filter-clear">Clear</button>

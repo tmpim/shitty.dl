@@ -2,11 +2,11 @@
 	<div class="column">
 		<div class="ui fluid centered brown card" style="max-width: 350px">
 			<div class="ui content center aligned icon">
-				<img class="icon" src="{{pathname}}{{ config.logo }}">
-				<div class="header" style="color: {{ config.name_color }} !important; font-size: 175%">{{ config.name }}</div>
+				<img class="icon" src="{{pathname}}logo/main">
+				<div class="header" style="color: {{ name_color }} !important; font-size: 175%">{{ name }}</div>
 			</div>
 			<p class="ui content text" style="font-size: 120%">
-				{{ config.title }}
+				{{ title }}
 			</p>
 			<form class="ui content" action="{{pathname}}login" method="post">
 				{{#if authed}}
@@ -19,7 +19,7 @@
 				{{/if}}
 			</form>
 			<p class="ui content text">
-				<small>{{ config.disclaimer }}</small>
+				<small>{{ disclaimer }}</small>
 			</p>
 		</div>
 	</div>

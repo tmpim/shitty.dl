@@ -28,6 +28,7 @@
 								<td class="collapsing">{{fileSize size}}</td>
 								<td class="right aligned collapsing">
 									<div onclick="copyListToClipboard(this)" class="ui mini icon primary button"><i class="copy outline icon"></i></div>
+									<div onclick="webShareList(this)" class="ui mini icon button webshare" style="display: none;"><i class="share square icon"></i></div>
 									<a href="{{@root.pathname}}paste/{{name}}" class="ui mini icon button"><i class="code icon"></i></a>
 									<div class="ui mini icon button clickpopupactivator" data-position="left center"><i class="icon settings"></i></div>
 									<div class="ui flowing popup transition hidden">

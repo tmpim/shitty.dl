@@ -1,17 +1,18 @@
 <!doctype html>
 <html>
 <head>
-	<title>{{ config.name }}</title>
+	<title>{{ name }}</title>
 	<meta charset="utf-8" />
 
 	<link href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.9/semantic.min.css" rel="stylesheet">
 	<link href="https://cdn.rawgit.com/mdehoog/Semantic-UI-Calendar/76959c6f7d33a527b49be76789e984a0a407350b/dist/calendar.min.css" rel="stylesheet" type="text/css" />
+	<link rel="manifest" href="{{pathname}}manifest.json">
 
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 	<style>
 		body {
-			background: #dadada;
+			background: {{background_color}};
 		}
 
 		body > .grid {
@@ -47,8 +48,17 @@
 		copyToClipboard($(element).parent().parent().children("td").children("a")[0].href);
 	};
 
-	function copyGalerryToClipboard(element) {
-		copyToClipboard($(element).parent().parent().children("a")[0].href);
+	function copyGalleryToClipboard(element) {
+		copyToClipboard($(element).parent().parent().find("a")[0].href);
+	};
+	
+	
+	function webShareList(element) {
+		navigator.share({ title: "Shitty Share", url: $(element).parent().parent().children("td").children("a")[0].href });
+	};
+
+	function webShareGallery(element) {
+		navigator.share({ title: "Shitty Share", url: $(element).parent().parent().children("a")[0].href });
 	};
 
 	function startRename(nonce, name) {
@@ -72,6 +82,14 @@
 
 	$(function() {
 
+		if ('share' in navigator) {
+			$(".webshare").show();
+		};
+		
+		if ('serviceWorker' in navigator) {
+			navigator.serviceWorker.register('{{pathname}}service-worker.js', {scope: './'});
+		};
+		
 		$("img.lazy").lazyload({
 			effect: "fadeIn"
 		});
@@ -85,7 +103,8 @@
 
 		$(".alertable").on( "click", function(e) {
 			e.preventDefault();
-			alert($(this)[0].href); /* This realy should be something nicer then alert. Dunno what ;p */
+			copyToClipboard($(this)[0].href);
+			alert("Link copied to clipboard."); /* This realy should be something nicer then alert. Dunno what v2 ;p */
 		});
 
 		$.event.special.swipe.durationThreshold = 100;

@@ -4,12 +4,13 @@
 			<div class="content">
 				<h1 class="header" style="color: #229A33 !important; font-size: 175%">Success</h1>
 			</div>
-			<p class="ui content text" style="font-size: 120%">
+			<div class="ui content text" id="success" style="font-size: 120%">
 				{{ successText }}
-			</p>
-			<p class="ui content text" style="font-size: 120%">
-				<button class="ui primary button" onClick="window.location.href = document.referrer" type="button"> Go Back </button>
-			</p>
+			</div>
+			<div class="ui content text" style="font-size: 120%">
+				<button class="ui primary button" onClick="copyToClipboard($('#success').text().trim())" type="button"> Copy </button>
+				<button class="ui button" onClick="window.location.href = document.referrer" type="button"> Go Back </button>
+			</div>
 		</div>
 	</div>
 </div>

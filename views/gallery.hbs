@@ -15,9 +15,15 @@
 							{{#if video}}
 							<video controls playsinline loop class="image" style="max-width: 100%;max-height: 100%;display: inline-block;vertical-align: middle" preload='metadata' src="{{@root.pathname}}{{name}}">
 								<a href="{{@root.pathname}}{{name}}" class="image">
-									<img class="lazy" data-original="{{@root.pathname}}{{@root.config.logo}}">
+									<img class="lazy" data-original="{{@root.pathname}}/logo/main">
 								</a>
 							</video>
+							{{else if audio}}
+							<audio controls style="max-width: 100%;max-height: 100%;display: inline-block;vertical-align: middle" preload='metadata' src="{{@root.pathname}}{{name}}">
+								<a href="{{@root.pathname}}{{name}}" class="image">
+									<img class="lazy" data-original="{{@root.pathname}}/logo/main">
+								</a>
+							</audio>
 							{{else}}
 							<a href="{{@root.pathname}}{{name}}" class="image">
 								<img class="lazy" data-original="{{@root.pathname}}{{name}}">
@@ -31,7 +37,8 @@
 								</div>
 							</div>
 							<div class="extra content">
-								<span onclick="copyGalerryToClipboard(this)" class="ui mini primary icon button"><i class="copy outline icon"></i></span>
+								<div onclick="copyGalleryToClipboard(this)" class="ui mini primary icon button"><i class="copy outline icon"></i></div>
+								<div onclick="webShareGallery(this)" class="ui mini icon button webshare" style="display: none;"><i class="share square icon"></i></div>
 								<div class="ui right floated mini icon button clickpopupactivator" data-position="top center"><i class="icon settings"></i></div>
 								<div class="ui flowing popup transition hidden">
 									<div class="ui mini labeled icon buttons">
@@ -50,3 +57,29 @@
 		</div>
 	</div>
 </div>
+{{#section "script"}}
+<script>
+	function fallbackLoad(t){
+		$.ajax({url: t.attr("data-original"), headers: {"Range": "bytes=0-255"},
+		success: function(result){
+			t.replaceWith($('<div style="padding: 5%; overflow-wrap:break-word;"></div>').text(result));
+		},
+		error: function(req){
+			if (req.status == 416) {
+				t.replaceWith($('<div style="padding: 5%; overflow-wrap:break-word; font-style:italic; text-decoration:underline"></div>').text("Empty file"));
+			} else {
+				t.replaceWith($('<div style="padding: 5%; overflow-wrap:break-word; font-weight:bold; text-decoration:underline"></div>').text("Unspecified display error."));
+			}
+		}});
+	}
+	function detectErrors(e){
+		let target = $(e.target);
+		$("<img />")
+		.one("error",function(){fallbackLoad(target)})
+		.attr("src", target.attr("data-original"));
+	}
+	$(function() {
+		$("img.lazy").one("appear",detectErrors);
+	});
+</script>
+{{/section}}

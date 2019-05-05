@@ -10,3 +10,7 @@ sessions
 /public/*
 !/public/poop.png
 !/public/jquery.mobile.custom.min.js
+!/public/service-worker.js
+!/public/poop192.png
+!/public/poop512.png
+!/public/poop96.png
