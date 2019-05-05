@@ -9,19 +9,19 @@ Make a file called `config.json`, with the following properties:
 ```json
 {
     "logo": {
-		"main": "poop.png",
-		"px96": "poop96.png",
-		"px192": "poop192.png",
-		"px512": "poop512.png"
-	},
+      "main": "poop.png",
+      "px96": "poop96.png",
+      "px192": "poop192.png",
+      "px512": "poop512.png"
+    },
     "name": "shitty.download",
-	"app_name": "Shitty",
+    "app_name": "Shitty",
     "name_color": "#a5673f",
-	"background_color": "#dadada",
+    "background_color": "#dadada",
     "title": "lemmmy's file host lies here",
     "disclaimer": "for dmca etc., contact drew at lemmmy dot pw",
     "password": [
-        ""
+      ""
     ],
     "imagePath": "/path/to/images",
     "url": "https://your.host/",
@@ -31,9 +31,9 @@ Make a file called `config.json`, with the following properties:
     "oldPasteThemeCompatibility": true,
     "sessionSecret": "",
     "uploadDeleteLink": true,
-	"imageFiles": ["jpeg","jpg","png","gif"],
-	"audioFiles": ["mp3","wav","flac","ogg"],
-	"videoFiles": ["mp4","webm"],
+    "imageFiles": ["jpeg","jpg","png","gif"],
+    "audioFiles": ["mp3","wav","flac","ogg"],
+    "videoFiles": ["mp4","webm"],
     "languagePackages": [
       "language-lua"
     ]
