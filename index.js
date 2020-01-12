@@ -49,6 +49,7 @@ const fallbackConfig = {
 	"pasteThemePath": "https://atom.github.io/highlights/examples/atom-dark.css",
 	"oldPasteThemeCompatibility": true,
 	"uploadDeleteLink": true,
+	"rawPasteAgents": "^(?:computercraft|curl|wget)"
 }
 
 const config = _.merge(
@@ -63,6 +64,7 @@ config.videoFiles = config.videoFiles || ["mp4","webm"];
 config.languagePackages = config.languagePackages || [];
 config.url = config.url.replace(/\/?$/, "/");
 config.imagePath = config.imagePath.replace(/\/?$/, "/");
+const rawPasteAgentsRegExp = config.rawPasteAgents ? new RegExp(config.rawPasteAgents, "i") : null;
 
 const fs = require("fs");
 const path = require("path");
@@ -566,7 +568,7 @@ router.post("/edit", (req, res) => {
 });
 
 function shouldReturnRaw(req) {
-	return config.rawPasteAgents && new RegExp(config.rawPasteAgents, "i").test(req.headers["user-agent"]);
+	return rawPasteAgentsRegExp && rawPasteAgentsRegExp.test(req.headers["user-agent"]);
 }
 
 router.get("/paste/:file", (req, res) => {
