@@ -541,6 +541,10 @@ router.post("/rename", (req, res) => {
 	});
 });
 
+function shouldReturnRaw(req) {
+	return config.pasteRawAgents && config.pasteRawAgents.test(req.get("User-Agent"));
+}
+
 router.post("/edit", (req, res) => {
 	if (typeof req.body.nonce === "undefined" || typeof req.body.file === "undefined" || typeof noncesLookup[req.body.nonce] === "undefined") return error(req, res, "No file specified.");
 
@@ -566,6 +570,8 @@ router.post("/edit", (req, res) => {
 });
 
 router.get("/paste/:file", (req, res) => {
+	if (shouldReturnRaw(req)) return res.redirect("/" + req.params.file);
+
 	const filename = sanitizeFilename(req.params.file);
 	const filePath = path.join(config.imagePath, filename);
 
@@ -597,6 +603,8 @@ router.get("/paste/:file", (req, res) => {
 });
 
 router.get("/edit/:file", (req, res) => {
+	if (shouldReturnRaw(req)) return res.redirect("/" + req.params.file);
+
 	let editor = true;
 	if (!req.session || !req.session.authed) {
 		if (!req.body.password) editor = undefined;

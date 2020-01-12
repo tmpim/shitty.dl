@@ -36,7 +36,8 @@ Make a file called `config.json`, with the following properties:
     "videoFiles": ["mp4","webm"],
     "languagePackages": [
       "language-lua"
-    ]
+    ],
+    "rawPasteAgents": "^(?:computercraft|curl|wget)"
 }
 ```
 - `logo` - Filenames of your logos images. Make sure to put them in /public.
@@ -59,6 +60,7 @@ Make a file called `config.json`, with the following properties:
 - `audioFiles` Array of file extentions that shitty will treat as audio.
 - `videoFiles` Array of file extentions that shitty will treat as video.
 - `languagePackages` Array of npm package names containing atom language grammars.
+- `rawPasteAgents` Regular expression (case-insensitive) matching agents to return raw pastes for (on `/paste` and `/edit`). Use `null` to disable. 
 
 ## Custom names
 
