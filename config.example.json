@@ -27,5 +27,6 @@
 	"videoFiles": ["mp4","webm"],
     "languagePackages": [
       "language-lua"
-    ]
+    ],
+    "rawPasteAgents": "^(?:computercraft|curl|wget)"
 }
