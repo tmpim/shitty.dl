@@ -10,6 +10,7 @@ Make a file called `config.json`, with the following properties:
 {
     "logo": {
       "main": "poop.png",
+      "px32": "poop32.png",
       "px96": "poop96.png",
       "px192": "poop192.png",
       "px512": "poop512.png"

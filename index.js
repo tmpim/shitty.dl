@@ -35,6 +35,7 @@ for (const password of userConfig.password) {
 const fallbackConfig = {
 	"logo": {
 		"main": "poop.png",
+		"px32": "poop32.png",
 		"px96": "poop96.png",
 		"px192": "poop192.png",
 		"px512": "poop512.png"
@@ -185,6 +186,11 @@ fs.writeFileSync("public/manifest.json", JSON.stringify({
   },
   "description": config.title,
   "icons": [
+    {
+      "src": "logo/96",
+      "sizes": "96x96",
+      "type": "image/png"
+    },
     {
       "src": "logo/192",
       "sizes": "192x192",
@@ -346,6 +352,7 @@ router.use(express.static("public"));
 router.use(express.static(config.imagePath));
 
 router.get("/logo/main", (req, res) => {res.sendFile(config.logo.main ,{ root : "public"});});
+router.get("/logo/32", (req, res) => {res.sendFile(config.logo.px32 ,{ root : "public"});});
 router.get("/logo/96", (req, res) => {res.sendFile(config.logo.px96 ,{ root : "public"});});
 router.get("/logo/192", (req, res) => {res.sendFile(config.logo.px192 ,{ root : "public"});});
 router.get("/logo/512", (req, res) => {res.sendFile(config.logo.px512 ,{ root : "public"});});
