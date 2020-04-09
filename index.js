@@ -415,7 +415,7 @@ router.post(["/upload","/webshareupload"], (req, res) => {
 		if (exten) ext = "." + exten.ext;
 	}
 
-	if (ext.toLowerCase() === ".php") return error(req, res, "Disallowed file type.");
+	// if (ext.toLowerCase() === ".php") return error(req, res, "Disallowed file type.");
 
 	let name;
 	let attempts = 0;
@@ -541,7 +541,7 @@ router.post("/rename", (req, res) => {
 
 	if (!fs.existsSync(filePath)) return error(req, res, "File don't exist");
 	if (fs.existsSync(`${config.imagePath}/${name}`)) return error(req, res, "Filename already in use.");
-	if (path.extname(name).toLowerCase() === ".php") return error(req, res, "Disallowed file type.");
+	// if (path.extname(name).toLowerCase() === ".php") return error(req, res, "Disallowed file type.");
 
 	moveFile( filePath , `${config.imagePath}/${name}`, err => {
 		if (err) {error(req, res, "Rename Failed."); return console.log(JSON.stringify(err));}
