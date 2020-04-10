@@ -94,12 +94,12 @@
 		});
 		
 		function errorMessage(err) {
-			$("body").html('<div class="ui middle aligned center aligned grid"><div class="column"><div class="ui centered red card"><div class="content"><h1 class="header" style="color: #DB2828 !important; font-size: 175%">Error</h1></div><div class="ui content text" id="error" style="font-size: 120%"></div><div class="ui content text" style="font-size: 120%"><button class="ui primary button" onClick="copyToClipboard($(\'#error\').text().trim())" type="button"> Copy </button><button class="ui button" onClick="window.location.href = document.referrer" type="button"> Go Back </button></div></div></div></div>');
+			$("body").html('<div class="ui middle aligned center aligned grid"><div class="column"><div class="ui centered red card"><div class="content"><h1 class="header" style="color: #DB2828 !important; font-size: 175%">Error</h1></div><div class="ui content text" id="error" style="font-size: 120%"></div><div class="ui content text" style="font-size: 120%"><button class="ui primary button" onClick="copyToClipboard($(\'#error\').text().trim())" type="button"> Copy </button><button class="ui button" onClick="history.back()" type="button"> Go Back </button></div></div></div></div>');
 			$("#error").text(err);
 		}
 		
 		function successMessage(mess) {
-			$("body").html('<div class="ui middle aligned center aligned grid"><div class="column"><div class="ui centered green card"><div class="content"><h1 class="header" style="color: #229A33 !important; font-size: 175%">Success</h1></div><div class="ui content text" id="success" style="font-size: 120%"></div><div class="ui content text" style="font-size: 120%"><button class="ui primary button" onClick="copyToClipboard($(\'#success\').text().trim())" type="button"> Copy </button><button class="ui button" onClick="window.location.href = document.referrer" type="button"> Go Back </button></div></div></div></div>');
+			$("body").html('<div class="ui middle aligned center aligned grid"><div class="column"><div class="ui centered green card"><div class="content"><h1 class="header" style="color: #229A33 !important; font-size: 175%">Success</h1></div><div class="ui content text" id="success" style="font-size: 120%"></div><div class="ui content text" style="font-size: 120%"><button class="ui primary button" onClick="copyToClipboard($(\'#success\').text().trim())" type="button"> Copy </button><button class="ui button" onClick="history.back()" type="button"> Go Back </button></div></div></div></div>');
 			$("#success").text(mess);
 		}
 		

@@ -36,7 +36,7 @@
 <div id="container"></div>
 {{#if editor}}
 <div id="buttons">
-	<div class="ui mini icon compact button clickpopupactivator" data-position="left center"><i class="settings icon"></i></div>
+	<div class="ui mini icon compact button clickpopupactivator" data-position="left center"><i class="settings icon" title="Options"></i></div>
 	<div class="ui flowing popup transition hidden">
 		<div id="diffToggle" class="ui toggle checkbox" style="margin-bottom: 0.5rem">
 		  <input tabindex="0" class="hidden" type="checkbox">
@@ -49,7 +49,7 @@
 				<div onclick="closePopups()" class="ui secondary button"><i class="window close icon"></i>Cancel</div>
 			</div>
 		</div>
-		<div onclick="closePopups()" class="ui mini labeled icon fluid compact secondary bottom attached button"><i class="window close icon"></i>Cancel</div>
+		<div onclick="exitEditor()" class="ui mini labeled icon fluid compact secondary bottom attached button"><i class="window close icon"></i>Exit Editor</div>
 	</div>
 	<div class="ui mini labeled icon compact primary button clickpopupactivator" data-position="left center"><i class="edit icon"></i>Save Changes</div>
 	<div class="ui flowing popup transition hidden">
@@ -62,11 +62,11 @@
 {{/if}}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.9/semantic.min.js"></script>
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.13.1/min/vs/loader.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.20.0/min/vs/loader.js"></script>
 <script>
 	var originalRaw	= atob("{{{base64 filecontents}}}");
 
-	require.config({ paths: { "vs": "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.13.1/min/vs" }});
+	require.config({ paths: { "vs": "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.20.0/min/vs" }});
 
 	// Before loading vs/editor/editor.main, define a global MonacoEnvironment that overwrites
 	// the default worker url location (used when creating WebWorkers). The problem here is that
@@ -76,9 +76,9 @@
 		getWorkerUrl: function(workerId, label) {
 		  return `data:text/javascript;charset=utf-8,${encodeURIComponent(`
 			self.MonacoEnvironment = {
-			baseUrl: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.13.1/min/vs'
+			baseUrl: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.20.0/min/vs'
 			};
-			importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.13.1/min/vs/base/worker/workerMain.js');`
+			importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.20.0/min/vs/base/worker/workerMain.min.js');`
 		)}`;
 		}
 	};
@@ -98,6 +98,7 @@
 			{{/unless}}
 			theme: "vs-dark"
 		});
+		if (modifiableModel.getValue() !== originalRaw) alert("Warning! Editing this file in this editor might cause file corruption.");
 	});
 
 	window.onresize = function () {
@@ -105,12 +106,19 @@
 	};
 
 	function startEdit(nonce, name) {
+		window.onbeforeunload = function () { };
+		window.onunload = function () { };
+		window.sessionStorage.setItem('forceEditorRefresh', window.location.href);
 		let file = btoa(modifiableModel.getValue());
 		$('<form action="{{pathname}}edit" method="POST"/>')
 		.append($(`<input type="hidden" name="nonce" value="${nonce}">`))
 		.append($(`<input type="hidden" name="file" value= "${file}">`))
 		.appendTo($(document.body))
 		.submit();
+	}
+	
+	if (window.sessionStorage.getItem("forceEditorRefresh") == location.href) { 
+		window.sessionStorage.removeItem("forceEditorRefresh"); window.location.reload()
 	}
 
 	function discardChanges() {
@@ -138,6 +146,10 @@
 
 	function closePopups() {
 		$(".clickpopupactivator").popup("hide");
+	}
+	
+	function exitEditor() {
+		if (modifiableModel.getValue() == originalRaw || confirm("There are unsaved changes. Do you want to exit?")) return history.back();
 	}
 
 	$(function() {

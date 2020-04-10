@@ -27,13 +27,13 @@
 								<td class="collapsing">{{dateformat mtime}}</td>
 								<td class="collapsing">{{fileSize size}}</td>
 								<td class="right aligned collapsing">
-									<div onclick="copyListToClipboard(this)" class="ui mini icon primary button"><i class="copy outline icon"></i></div>
-									<div onclick="webShareList(this)" class="ui mini icon button webshare" style="display: none;"><i class="share square icon"></i></div>
-									<a href="{{@root.pathname}}l/{{name}}" class="ui mini icon button"><i class="external icon"></i></a>
-									<div class="ui mini icon button clickpopupactivator" data-position="left center"><i class="icon settings"></i></div>
+									<div onclick="copyListToClipboard(this)" class="ui mini icon primary button" title="Copy url to clipboard"><i class="copy outline icon"></i></div>
+									<div onclick="webShareList(this)" class="ui mini icon button webshare" title="Share" style="display: none;"><i class="share square icon"></i></div>
+									<a href="{{@root.pathname}}l/{{name}}" class="ui mini icon button" title="Open linked page"><i class="external icon"></i></a>
+									<div class="ui mini icon button clickpopupactivator" data-position="left center"><i class="icon settings" title="Options"></i></div>
 									<div class="ui flowing popup transition hidden">
 										<div class="ui mini labeled icon buttons">
-											<a href="{{@root.pathname}}edit/{{name}}" class="ui primary button"><i class="edit icon"></i>Edit</a>
+											<div onclick="startEditor('{{@root.pathname}}edit/{{name}}')" class="ui primary button"><i class="edit icon"></i>Edit</div>
 											<div onclick="startRename('{{nonce}}','{{name}}')" class="ui button"><i class="pencil icon"></i>Rename</div>
 											<div onclick="startDelete('{{nonce}}','{{name}}')" class="ui negative button"><i class="eraser icon"></i>Delete</div>
 										</div>

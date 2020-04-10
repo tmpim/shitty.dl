@@ -66,6 +66,8 @@ config.languagePackages = config.languagePackages || [];
 config.url = config.url.replace(/\/?$/, "/");
 config.imagePath = config.imagePath.replace(/\/?$/, "/");
 const rawPasteAgentsRegExp = config.rawPasteAgents ? new RegExp(config.rawPasteAgents, "i") : null;
+const maxPasteSize = 2 ** 19;
+const maxUrlSize = 1024;
 
 const fs = require("fs");
 const path = require("path");
@@ -219,7 +221,11 @@ app.engine(".hbs", handlebars({
 			this._sections[name] = options.fn(this);
 			return null;
 		},
-		base64: data => Buffer.from(data).toString("base64")
+		base64: data => Buffer.from(data).toString("base64"),
+		lessThan: function (v1, v2, options) {
+		  if (v1<v2) return options.fn(this);
+		  return options.inverse(this);
+		}
 	})
 }));
 app.set("view engine", ".hbs");
@@ -569,6 +575,9 @@ router.post("/edit", (req, res) => {
       error(req, res, "Edit failed.");
 			return console.log(JSON.stringify(err));
 		}
+		
+		delete statCache[filePath]; //Invalidate stats for file on edit.
+		flushStats()
 
 		success(req, res, `File ${fileName} edited successfuly`);
 	});
@@ -593,7 +602,7 @@ router.get("/paste/:file", (req, res) => {
 		//console.log(stats);
 
 		if (!stats.isFile()) return res.status(404).send("File not found");
-		if (stats.size > 2 ** 19) return error(req, res, `File too large (${filesize(stats.size)})`);
+		if (stats.size > maxPasteSize) return error(req, res, `File too large (${filesize(stats.size)})`);
 
 		const html = highlighter
 			? highlighter.highlightSync({filePath})
@@ -632,7 +641,7 @@ router.get("/edit/:file", (req, res) => {
 		//console.log(stats);
 
 		if (!stats.isFile()) return res.status(404).send("File not found");
-		if (stats.size > 2 ** 19) return error(req, res, `File too large (${filesize(stats.size)})`);
+		if (stats.size > maxPasteSize) return error(req, res, `File too large (${filesize(stats.size)})`);
 
 		const filecontents = fs.readFileSync(filePath, { encoding: "utf8" });
 
@@ -661,7 +670,7 @@ router.get("/l/:file", (req, res) => {
 		const stats = fs.statSync(filePath);
 
 		if (!stats.isFile()) return res.status(404).send("File not found");
-		if (stats.size > 1024) return error(req, res, `URL too large (${filesize(stats.size)})`);
+		if (stats.size > maxUrlSize) return error(req, res, `URL too large (${filesize(stats.size)})`);
 
 		res.redirect(fs.readFileSync(filePath, { encoding: "utf8" }).trim());
 	} catch (err) {
@@ -677,7 +686,7 @@ function fileListing(mask, pageTemplate, route, req, res) {
 	const finder = Finder.from(config.imagePath);
 	if (req.query.start) finder.date(">", moment(new Date(req.query.start)).set({hours: 0, minutes: 0, seconds: 0, milliseconds: 0}).toISOString());
 	if (req.query.end) finder.date("<", moment(new Date(req.query.end)).set({hours: 0, minutes: 0, seconds: 0, milliseconds: 0}).add(1, "day").toISOString());
-	if (pageTemplate == "links") finder.size('<=', 1024);
+	if (pageTemplate == "links") finder.size('<=', maxUrlSize);
 	const files = finder.findFiles(mask);
 
 	let page = typeof req.params.page !== "undefined" ? parseInt(req.params.page) : 0;
@@ -699,7 +708,7 @@ function fileListing(mask, pageTemplate, route, req, res) {
 			size: stat.size,
 			mtime: stat.mtime,
 			mtimeSave: stat.mtime.toString(),
-			c: (stat.size <= 1024 && ext == "" ? fs.readFileSync(`${f}`, { encoding: "utf8" }).trim() : undefined), /* undefined is not saved into JSON */
+			c: (stat.size <= maxUrlSize && ext == "" ? fs.readFileSync(`${f}`, { encoding: "utf8" }).trim() : undefined), /* undefined is not saved into JSON */
 			nonce: (nonces[f] || generateNonce(f))
 		};
 
@@ -723,6 +732,8 @@ function fileListing(mask, pageTemplate, route, req, res) {
 		imageFilesFilter,
 		audioFilesFilter,
 		videoFilesFilter,
+		maxPasteSize,
+		maxUrlSize,
 		pathname
 	});
 }

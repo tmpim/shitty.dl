@@ -63,6 +63,9 @@
 	function startRename(nonce, name) {
 		let newName = prompt("Please proivide new filename", name);
 		if (newName) {
+			window.onbeforeunload = function () { };
+			window.onunload = function () { };
+			window.sessionStorage.setItem('forceListRefresh', window.location.href);
 			$('<form action="{{pathname}}rename" method="POST"/>')
 			.append($(`<input type="hidden" name="nonce" value="${nonce}">`))
 			.append($(`<input type="hidden" name="name" value="${newName}">`))
@@ -73,11 +76,25 @@
 
 	function startDelete(nonce, name) {
 		if (confirm(`Please confirm you want to delete the ${name} file.`)) {
+			window.onbeforeunload = function () { };
+			window.onunload = function () { };
+			window.sessionStorage.setItem('forceListRefresh', window.location.href);
 			$(`<form action="{{pathname}}delete/${nonce}" method="POST"/>`)
 			.appendTo($(document.body))
 			.submit();
 		};
 	};
+	
+	function startEditor(url) {
+		window.onbeforeunload = function () { };
+		window.onunload = function () { };
+		window.sessionStorage.setItem('forceListRefresh', window.location.href);
+		window.location.href = url;
+	};
+	
+	if (window.sessionStorage.getItem("forceListRefresh") == location.href) { 
+		window.sessionStorage.removeItem("forceListRefresh"); window.location.reload()
+	}
 
 	$(function() {
 
