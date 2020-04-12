@@ -123,7 +123,10 @@
 			alert("Link copied to clipboard."); /* This realy should be something nicer then alert. Dunno what v2 ;p */
 		});
 
-		$.event.special.swipe.durationThreshold = 100;
+		$.event.special.swipe.durationThreshold = 500;
+		$.event.special.swipe.scrollSupressionThreshold = (window.screen.availWidth) / 60;
+		$.event.special.swipe.horizontalDistanceThreshold = (window.screen.availWidth) / 2;
+		$.event.special.swipe.verticalDistanceThreshold = (window.screen.availHeight) / 2;
 
 		$( "div.ui.grid" ).on( "swiperight", function(e){
 			console.log("swiperight");

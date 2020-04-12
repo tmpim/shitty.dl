@@ -680,10 +680,10 @@ router.get("/l/:file", (req, res) => {
 
 function fileListing(mask, pageTemplate, route, req, res) {
 	if (req.query.search) {
-		mask = config.imagePath+`*<(${req.query.search.split(",").join("|").replace(/[a-zA-Z]/g, x => {return '['+x.toLowerCase()+x.toUpperCase()+']';})})>`;
+		mask = config.imagePath.slice(0,-1)+`*<(${req.query.search.split(",").join("|").replace(/[a-zA-Z]/g, x => {return '['+x.toLowerCase()+x.toUpperCase()+']';})})>`;
 	}
 
-	const finder = Finder.from(config.imagePath);
+	const finder = Finder.in(config.imagePath);
 	if (req.query.start) finder.date(">", moment(new Date(req.query.start)).set({hours: 0, minutes: 0, seconds: 0, milliseconds: 0}).toISOString());
 	if (req.query.end) finder.date("<", moment(new Date(req.query.end)).set({hours: 0, minutes: 0, seconds: 0, milliseconds: 0}).add(1, "day").toISOString());
 	if (pageTemplate == "links") finder.size('<=', maxUrlSize);

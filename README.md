@@ -85,3 +85,4 @@ More examples for custom naming functions can be found in the [examples director
 
 * Ensure that the user you run the shitty.dl process as has write permissions to `imagePath`.
 * Make sure your paste theme has the same scheme as your site - i.e. if your site is HTTPS, the theme must be HTTPS too.
+* When running shitty.dl it is suggested to set `NODE_ENV=production` environmental variable to ensure any errors that might happen are not passed on in detail to end user.
