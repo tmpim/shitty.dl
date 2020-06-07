@@ -748,7 +748,8 @@ function fileListing(mask, pageTemplate, route, req, res) {
 	const files = finder.findFiles(mask);
 
 	let page = typeof req.params.page !== "undefined" ? parseInt(req.params.page) : 0;
-	page = Math.min(Math.max(0, page), files.length);
+	let displayAll = (page == -1);
+	page = Math.min(Math.max(0, page), Math.floor(files.length/48));
 
 	const paginationInfo = paginator.build(files.length, page);
 
@@ -786,7 +787,7 @@ function fileListing(mask, pageTemplate, route, req, res) {
 		query: url.parse(req.url).query,
 		paginationInfo,
 		pages: _.range(paginationInfo.first_page, paginationInfo.last_page + 1),
-		files: _.slice(fullFiles, paginationInfo.first_result, paginationInfo.last_result + 1),
+		files: displayAll ? fullFiles : _.slice(fullFiles, paginationInfo.first_result, paginationInfo.last_result + 1),
 		imageFilesFilter,
 		audioFilesFilter,
 		videoFilesFilter,
