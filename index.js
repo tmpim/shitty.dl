@@ -749,7 +749,7 @@ function fileListing(mask, pageTemplate, route, req, res) {
 
 	let page = typeof req.params.page !== "undefined" ? parseInt(req.params.page) : 0;
 	let displayAll = (page == -1);
-	page = Math.min(Math.max(0, page), Math.floor(files.length/48));
+	page = Math.min(Math.max(1, page), Math.ceil(files.length/48));
 
 	const paginationInfo = paginator.build(files.length, page);
 
