@@ -177,8 +177,9 @@ if (highlighter && config.languagePackages) {
 }
 
 const imagePaths =
-	_(config.otherHosts).values().concat(config.imagePath)
+	_(config.otherHosts).values()
 		.map("imagePath").filter(x => !!x)
+		.concat(config.imagePath)
 		.value();
 
 for (imagePath of imagePaths) {
