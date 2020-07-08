@@ -476,7 +476,7 @@ router.post(["/upload","/webshareupload"], (req, res) => {
 			name = req.body.name.replace(/[^A-Za-z0-9_\-]/g, "_");
 		} else {
 			if (customName) {
-				name = customName();
+				name = customName(req.host, req.config);
 			} else {
 				name = cr.next();
 			}
