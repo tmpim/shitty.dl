@@ -163,53 +163,63 @@ if (highlighter && config.languagePackages) {
   });
 }
 
-if (!fs.existsSync(`${config.imagePath}/.deleted`)){
-    fs.mkdirSync(`${config.imagePath}/.deleted`);
+const imagePaths =
+	_(config.otherHosts).values().concat(config.imagePath)
+		.map("imagePath").filter(x => !!x)
+		.value();
+
+for (imagePath of imagePaths) {
+	if (!fs.existsSync(`${imagePath}/.deleted`)){
+		fs.mkdirSync(`${imagePath}/.deleted`);
+	}
 }
 
-fs.writeFileSync("public/manifest.json", JSON.stringify({
-  "short_name": config.app_name,
-  "name": config.name,
-  "share_target": {
-    "action": "webshareupload",
-    "method": "POST",
-    "enctype": "multipart/form-data",
-    "params": {
-      "title": "sharetitle",
-      "text": "sharetext",
-      "url": "shareurl",
-      "files": [
-        {
-          "name": "file",
-          "accept": ["*/*"]
-        }
-      ]
-    }
-  },
-  "description": config.title,
-  "icons": [
-    {
-      "src": "logo/96",
-      "sizes": "96x96",
-      "type": "image/png"
-    },
-    {
-      "src": "logo/192",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "logo/512",
-      "sizes": "512x512",
-      "type": "image/png"
-    }
-  ],
-  "start_url": "webshareupload",
-  "scope": "webshareupload",
-  "display": "standalone",
-  "theme_color": config.name_color,
-  "background_color": config.background_color
-}));
+// fs.writeFileSync("public/manifest.json", JSON.stringify());
+function genManifest(hostConfig) {
+	return {
+		"short_name": hostConfig.app_name,
+		"name": hostConfig.name,
+		"share_target": {
+		  "action": "webshareupload",
+		  "method": "POST",
+		  "enctype": "multipart/form-data",
+		  "params": {
+			"title": "sharetitle",
+			"text": "sharetext",
+			"url": "shareurl",
+			"files": [
+			  {
+				"name": "file",
+				"accept": ["*/*"]
+			  }
+			]
+		  }
+		},
+		"description": hostConfig.title,
+		"icons": [
+		  {
+			"src": "logo/96",
+			"sizes": "96x96",
+			"type": "image/png"
+		  },
+		  {
+			"src": "logo/192",
+			"sizes": "192x192",
+			"type": "image/png"
+		  },
+		  {
+			"src": "logo/512",
+			"sizes": "512x512",
+			"type": "image/png"
+		  }
+		],
+		"start_url": "webshareupload",
+		"scope": "webshareupload",
+		"display": "standalone",
+		"theme_color": hostConfig.name_color,
+		"background_color": hostConfig.background_color
+	}
+}
 
 app.engine(".hbs", handlebars({
 	defaultLayout: "main",
@@ -242,6 +252,7 @@ bb.extend(app, {
 });
 
 function error(req, res, error) {
+	const conf = req.config;
 	console.error(util.inspect(error, {
 		depth: null,
 		colors: true,
@@ -252,8 +263,8 @@ function error(req, res, error) {
 		res.json({ ok: false, error });
 	} else {
 		res.render("error", {
-			name: config.name,
-			background_color: config.background_color,
+			name: conf.name,
+			background_color: conf.background_color,
 			errorText: error,
 			pathname
 		});
@@ -261,12 +272,13 @@ function error(req, res, error) {
 }
 
 function success(req, res, success) {
+	const conf = req.config;
 	if (req.xhr || req.headers.accept.indexOf('json') > -1) {
 		res.json({ ok: true, success });
 	} else {
 		res.render("success", {
-			name: config.name,
-			background_color: config.background_color,
+			name: conf.name,
+			background_color: conf.background_color,
 			successText: success,
 			pathname
 		});
@@ -333,9 +345,9 @@ function flushNonces() {
 	fs.writeFile("nonces.json", JSON.stringify(nonces), () => {});
 }
 
-function checkPassword(password) {
+function checkPassword(conf, password) {
 	const passwordHash = crypto.createHash("sha256").update(password).digest("hex");
-	return config.password.includes(passwordHash);
+	return conf.password.includes(passwordHash);
 }
 
 app.use(promBundle({
@@ -355,21 +367,37 @@ function auth(req, res, next) {
 }
 
 router.use(express.static("public"));
-router.use(express.static(config.imagePath));
+for (const imagePath of imagePaths) {
+	router.use(express.static(imagePath));
+}
 
-router.get("/logo/main", (req, res) => {res.sendFile(config.logo.main ,{ root : "public"});});
-router.get("/logo/32", (req, res) => {res.sendFile(config.logo.px32 ,{ root : "public"});});
-router.get("/logo/96", (req, res) => {res.sendFile(config.logo.px96 ,{ root : "public"});});
-router.get("/logo/192", (req, res) => {res.sendFile(config.logo.px192 ,{ root : "public"});});
-router.get("/logo/512", (req, res) => {res.sendFile(config.logo.px512 ,{ root : "public"});});
+router.use(function selectConfig(req, res, next) {
+	const newConfigVals = config.otherHosts[req.hostname];
+	if (!newConfigVals)  {
+		req.config = config;
+	} else {
+		req.config = _.merge({}, config, {url: `https://${req.hostname}/`}, newConfigVals);
+	}
+
+	next();
+});
+
+router.get("/logo/main", (req, res) => {res.sendFile(req.config.logo.main ,{ root : "public"});});
+router.get("/logo/32", (req, res) => {res.sendFile(req.config.logo.px32 ,{ root : "public"});});
+router.get("/logo/96", (req, res) => {res.sendFile(req.config.logo.px96 ,{ root : "public"});});
+router.get("/logo/192", (req, res) => {res.sendFile(req.config.logo.px192 ,{ root : "public"});});
+router.get("/logo/512", (req, res) => {res.sendFile(req.config.logo.px512 ,{ root : "public"});});
+
+router.get("/manifest.json", (req, res) => {res.send(genManifest(req.config));});
 
 router.get(["/", "/home"], (req, res) => {
+	const conf = req.config;
 	res.render("home", {
-		name: config.name,
-		name_color: config.name_color,
-		background_color: config.background_color,
-		title: config.title,
-		disclaimer: config.disclaimer,
+		name: conf.name,
+		name_color: conf.name_color,
+		background_color: conf.background_color,
+		title: conf.title,
+		disclaimer: conf.disclaimer,
 		authed: req.session && req.session.authed,
 		pathname
 	});
@@ -377,7 +405,7 @@ router.get(["/", "/home"], (req, res) => {
 
 router.post("/login", (req, res) => {
 	if (!req.body.password) return error(req, res, "No password specified.");
-	if (!checkPassword(req.body.password)) return error(req, res, "Incorrect password.");
+	if (!checkPassword(req.config, req.body.password)) return error(req, res, "Incorrect password.");
 
 	req.session.authed = true;
 	req.session.save();
@@ -386,21 +414,24 @@ router.post("/login", (req, res) => {
 });
 
 router.get(["/upload","/webshareupload"], auth, (req, res) => {
+	const conf = req.config;
 	res.render("upload", {
-		name: config.name,
-		name_color: config.name_color,
-		background_color: config.background_color,
+		name: conf.name,
+		name_color: conf.name_color,
+		background_color: conf.background_color,
 		pageTemplate: "upload",
 		pathname
 	});
 });
 
 router.post(["/upload","/webshareupload"], (req, res) => {
+	const conf = req.config;
+
 	if ( typeof req.body.link === "undefined" && typeof req.body.file === "undefined" && (!req.files || !req.files.file)) return error(req, res, "No file/URL specified.");
 
 	if (!req.session || !req.session.authed) {
 		if (!req.body.password) return error(req, res, "No password specified.");
-		if (!checkPassword(req.body.password)) return error(req, res, "Incorrect password.");
+		if (!checkPassword(conf, req.body.password)) return error(req, res, "Incorrect password.");
 	}
 
 	let file;
@@ -442,56 +473,56 @@ router.post(["/upload","/webshareupload"], (req, res) => {
 		if (attempts > 20) {
 			return error(req, res, "Could not generate unique filename after 20 attempts.");
 		}
-	} while (fs.existsSync(`${config.imagePath}/${name}${ext}`));
+	} while (fs.existsSync(`${conf.imagePath}/${name}${ext}`));
 
 	if (req.body.link) {
-		fs.writeFile(`${config.imagePath}/${name}`, req.body.link, (err) => {
+		fs.writeFile(`${conf.imagePath}/${name}`, req.body.link, (err) => {
 			if (err) {
 					   error(req, res, "Upload failed.");
 					   return console.log(JSON.stringify(err));
 			}
-			let nonce = generateNonce(`${config.imagePath}/${name}`);
+			let nonce = generateNonce(`${conf.imagePath}/${name}`);
 			flushNonces();
 			name = "l/" + name;
 
 			if (req.path === "/webshareupload") {
-				success(req, res, `URL shortened to <a href="${config.url}${name}">"${config.url}${name}"</a>` );
+				success(req, res, `URL shortened to <a href="${conf.url}${name}">"${conf.url}${name}"</a>` );
 			} else {
 				res.json({
 					ok: true,
-					url: `${config.url}${name}`,
-					deleteUrl: config.uploadDeleteLink ? `${config.url}delete/${nonce}` : undefined
+					url: `${conf.url}${name}`,
+					deleteUrl: conf.uploadDeleteLink ? `${conf.url}delete/${nonce}` : undefined
 				});
 			}
 		});
 	} else if (file) {
-		fs.writeFile(`${config.imagePath}/${name}${ext}`, file, (err) => {
+		fs.writeFile(`${conf.imagePath}/${name}${ext}`, file, (err) => {
 			if (err) {
 					   error(req, res, "Upload failed.");
 					   return console.log(JSON.stringify(err));
 			}
-			let nonce = generateNonce(`${config.imagePath}/${name}${ext}`);
+			let nonce = generateNonce(`${conf.imagePath}/${name}${ext}`);
 			flushNonces();
 
 			if (req.path === "/webshareupload") {
-				success(req, res, `${config.url}${name}${ext}` );
+				success(req, res, `${conf.url}${name}${ext}` );
 			} else if (req.body.online === "yes") {
-				res.redirect(`${config.url}${name}${ext}`);
+				res.redirect(`${conf.url}${name}${ext}`);
 			} else {
 				res.json({
 					ok: true,
-					url: `${config.url}${name}${ext}`,
-					deleteUrl: config.uploadDeleteLink ? `${config.url}delete/${nonce}` : undefined
+					url: `${conf.url}${name}${ext}`,
+					deleteUrl: conf.uploadDeleteLink ? `${conf.url}delete/${nonce}` : undefined
 				});
 			}
 		});
 	} else {
-		moveFile(req.files.file.file, `${config.imagePath}/${name}${ext}`, err => {
+		moveFile(req.files.file.file, `${conf.imagePath}/${name}${ext}`, err => {
 			if (err) {
 					   error(req, res, "Upload failed.");
 					   return console.log(JSON.stringify(err));
 			}
-			let nonce = generateNonce(`${config.imagePath}/${name}${ext}`);
+			let nonce = generateNonce(`${conf.imagePath}/${name}${ext}`);
 			flushNonces();
 
 			if (typeof req.query.paste !== "undefined") {
@@ -499,14 +530,14 @@ router.post(["/upload","/webshareupload"], (req, res) => {
 			}
 
 			if (req.path === "/webshareupload") {
-				success(req, res, `${config.url}${name}${ext}` );
+				success(req, res, `${conf.url}${name}${ext}` );
 			} else if (req.body.online === "yes") {
-				res.redirect(`${config.url}${name}${ext}`);
+				res.redirect(`${conf.url}${name}${ext}`);
 			} else {
 				res.json({
 					ok: true,
-					url: `${config.url}${name}${ext}`,
-					deleteUrl: config.uploadDeleteLink ? `${config.url}delete/${nonce}` : undefined
+					url: `${conf.url}${name}${ext}`,
+					deleteUrl: conf.uploadDeleteLink ? `${conf.url}delete/${nonce}` : undefined
 				});
 			}
 		});
@@ -514,11 +545,13 @@ router.post(["/upload","/webshareupload"], (req, res) => {
 });
 
 router.all("/delete/:nonce", (req, res) => {
+	const conf = req.config;
+
 	if (typeof req.params.nonce === "undefined" || typeof noncesLookup[req.params.nonce] === "undefined") return error(req, res, "Invalid nonce provided");
 
-	if (!config.uploadDeleteLink && ( !req.session || !req.session.authed ) ) {
+	if (!conf.uploadDeleteLink && ( !req.session || !req.session.authed ) ) {
 		if (!req.body.password) return error(req, res, "No password specified.");
-		if (!checkPassword(req.body.password)) return error(req, res, "Incorrect password.");
+		if (!checkPassword(conf, req.body.password)) return error(req, res, "Incorrect password.");
 	}
 
 	const filePath = noncesLookup[req.params.nonce];
@@ -526,7 +559,7 @@ router.all("/delete/:nonce", (req, res) => {
 
 	if (!fs.existsSync(filePath)) return error(req, res, "File don't exist");
 
-	moveFile( filePath , `${config.imagePath}/.deleted/${fileName}`, err => {
+	moveFile( filePath , `${conf.imagePath}/.deleted/${fileName}`, err => {
 		if (err) {error(req, res, "Deletion Failed."); return console.log(JSON.stringify(err));}
 		success(req, res, `File ${fileName} deleted successfuly`);
 		removeNonce(req.params.nonce)
@@ -534,11 +567,13 @@ router.all("/delete/:nonce", (req, res) => {
 });
 
 router.post("/rename", (req, res) => {
+	const conf = req.config;
+
 	if (typeof req.body.nonce === "undefined" || typeof req.body.name === "undefined" || typeof noncesLookup[req.body.nonce] === "undefined") return error(req, res, "No file specified.");
 
 	if (!req.session || !req.session.authed) {
 		if (!req.body.password) return error(req, res, "No password specified.");
-		if (!checkPassword(req.body.password)) return error(req, res, "Incorrect password.");
+		if (!checkPassword(conf, req.body.password)) return error(req, res, "Incorrect password.");
 	}
 
 	const filePath = noncesLookup[req.body.nonce];
@@ -546,10 +581,10 @@ router.post("/rename", (req, res) => {
 	const name = sanitizeFilename(req.body.name);
 
 	if (!fs.existsSync(filePath)) return error(req, res, "File don't exist");
-	if (fs.existsSync(`${config.imagePath}/${name}`)) return error(req, res, "Filename already in use.");
+	if (fs.existsSync(`${conf.imagePath}/${name}`)) return error(req, res, "Filename already in use.");
 	// if (path.extname(name).toLowerCase() === ".php") return error(req, res, "Disallowed file type.");
 
-	moveFile( filePath , `${config.imagePath}/${name}`, err => {
+	moveFile( filePath , `${conf.imagePath}/${name}`, err => {
 		if (err) {error(req, res, "Rename Failed."); return console.log(JSON.stringify(err));}
 		success(req, res, `File ${fileName} renamed to ${name} successfuly`);
 		removeNonce(req.body.nonce)
@@ -557,11 +592,13 @@ router.post("/rename", (req, res) => {
 });
 
 router.post("/edit", (req, res) => {
+	const conf = req.config;
+
 	if (typeof req.body.nonce === "undefined" || typeof req.body.file === "undefined" || typeof noncesLookup[req.body.nonce] === "undefined") return error(req, res, "No file specified.");
 
 	if (!req.session || !req.session.authed) {
 		if (!req.body.password) return error(req, res, "No password specified.");
-		if (!checkPassword(req.body.password)) return error(req, res, "Incorrect password.");
+		if (!checkPassword(conf, req.body.password)) return error(req, res, "Incorrect password.");
 	}
 
 	const filePath = noncesLookup[req.body.nonce];
@@ -588,10 +625,12 @@ function shouldReturnRaw(req) {
 }
 
 router.get("/paste/:file", (req, res) => {
+	const conf = req.config;
+
 	if (shouldReturnRaw(req)) return res.redirect("/" + req.params.file);
 
 	const filename = sanitizeFilename(req.params.file);
-	const filePath = path.join(config.imagePath, filename);
+	const filePath = path.join(conf.imagePath, filename);
 
 	if (!filePath) return res.status(404).send("File not found");
 
@@ -610,7 +649,7 @@ router.get("/paste/:file", (req, res) => {
 
 		res.render("paste", {
 			paste: html,
-			style: config.pasteThemePath || "https://atom.github.io/highlights/examples/atom-dark.css",
+			style: conf.pasteThemePath || "https://atom.github.io/highlights/examples/atom-dark.css",
 			name: filename,
 			pathname,
 			layout: false
@@ -621,16 +660,18 @@ router.get("/paste/:file", (req, res) => {
 });
 
 router.get("/edit/:file", (req, res) => {
+	const conf = req.config;
+
 	if (shouldReturnRaw(req)) return res.redirect("/" + req.params.file);
 
 	let editor = true;
 	if (!req.session || !req.session.authed) {
 		if (!req.body.password) editor = undefined;
-		else if (!checkPassword(req.body.password)) return error(req, res, "Incorrect password.");
+		else if (!checkPassword(conf, req.body.password)) return error(req, res, "Incorrect password.");
 	}
 
 	const filename = sanitizeFilename(req.params.file);
-	const filePath = path.join(config.imagePath, filename);
+	const filePath = path.join(conf.imagePath, filename);
 
 	if (!filePath) return res.status(404).send("File not found");
 
@@ -659,8 +700,9 @@ router.get("/edit/:file", (req, res) => {
 });
 
 router.get("/l/:file", (req, res) => {
+	const conf = req.config;
 	const filename = sanitizeFilename(req.params.file);
-	const filePath = path.join(config.imagePath, filename);
+	const filePath = path.join(conf.imagePath, filename);
 
 	if (!filePath) return res.status(404).send("File not found");
 	if (path.extname(filePath)) return error(req, res, "URL not valid");
@@ -679,11 +721,12 @@ router.get("/l/:file", (req, res) => {
 });
 
 function fileListing(mask, pageTemplate, route, req, res) {
+	const conf = req.config;
 	if (req.query.search) {
-		mask = config.imagePath.slice(0,-1)+`*<(${req.query.search.split(",").join("|").replace(/[a-zA-Z]/g, x => {return '['+x.toLowerCase()+x.toUpperCase()+']';})})>`;
+		mask = conf.imagePath.slice(0,-1)+`*<(${req.query.search.split(",").join("|").replace(/[a-zA-Z]/g, x => {return '['+x.toLowerCase()+x.toUpperCase()+']';})})>`;
 	}
 
-	const finder = Finder.in(config.imagePath);
+	const finder = Finder.in(conf.imagePath);
 	if (req.query.start) finder.date(">", moment(new Date(req.query.start)).set({hours: 0, minutes: 0, seconds: 0, milliseconds: 0}).toISOString());
 	if (req.query.end) finder.date("<", moment(new Date(req.query.end)).set({hours: 0, minutes: 0, seconds: 0, milliseconds: 0}).add(1, "day").toISOString());
 	if (pageTemplate == "links") finder.size('<=', maxUrlSize);
@@ -702,9 +745,9 @@ function fileListing(mask, pageTemplate, route, req, res) {
 		const stat = fs.statSync(`${f}`);
 		const ext = path.extname(f);
 		const o = {
-			name: path.relative(config.imagePath, f),
-			video: (_.includes(config.videoFiles, ext.substr(1)) ? 1 : undefined), /* undefined is not saved into JSON */
-			audio: (_.includes(config.audioFiles, ext.substr(1)) ? 1 : undefined), /* undefined is not saved into JSON */
+			name: path.relative(conf.imagePath, f),
+			video: (_.includes(conf.videoFiles, ext.substr(1)) ? 1 : undefined), /* undefined is not saved into JSON */
+			audio: (_.includes(conf.audioFiles, ext.substr(1)) ? 1 : undefined), /* undefined is not saved into JSON */
 			size: stat.size,
 			mtime: stat.mtime,
 			mtimeSave: stat.mtime.toString(),
@@ -721,8 +764,8 @@ function fileListing(mask, pageTemplate, route, req, res) {
 	flushNonces();
 
 	res.render(pageTemplate, {
-		name: config.name,
-		background_color: config.background_color,
+		name: conf.name,
+		background_color: conf.background_color,
 		route,
 		pageTemplate,
 		query: url.parse(req.url).query,
@@ -743,10 +786,11 @@ router.get("/list/:page?", auth, (req, res) => fileListing("*", "list", pathname
 router.get("/links/:page?", auth, (req, res) => fileListing("<^[^.]+$>", "links", pathname+"links", req, res));
 
 router.get("/misc", auth, (req, res) => {
+	const conf = req.config;
 	res.render("misc", {
-		name: config.name,
-		background_color: config.background_color,
-		url: config.url,
+		name: conf.name,
+		background_color: conf.background_color,
+		url: conf.url,
 		pageTemplate: "misc",
 		pathname
 	});

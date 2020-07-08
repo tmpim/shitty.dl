@@ -17,6 +17,13 @@
     ],
     "imagePath": "/path/to/images",
     "url": "https://your.host/",
+    "otherHosts": {
+        "your.other.host": {
+            "name": "even.shittier.download",
+            "title": "lemmmy's extra shitty file host lies here",
+            "logo": { "main": "shit.png" }
+        }
+    },
     "listen": "3000",
     "fileLength": 4,
     "pasteThemePath": "https://atom.github.io/highlights/examples/atom-dark.css",
