@@ -50,7 +50,8 @@ const fallbackConfig = {
 	"pasteThemePath": "https://atom.github.io/highlights/examples/atom-dark.css",
 	"oldPasteThemeCompatibility": true,
 	"uploadDeleteLink": true,
-	"rawPasteAgents": "^(?:computercraft|curl|wget)"
+	"rawPasteAgents": "^(?:computercraft|curl|wget)",
+	"otherHosts": {}
 }
 
 const config = _.merge(
