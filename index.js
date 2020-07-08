@@ -25,7 +25,19 @@ if (typeof userConfig.logo === "string") {
 	userConfig.logo = {"main": userConfig.logo};
 }
 
-for (const password of userConfig.password) {
+for (const host in (userConfig.otherHosts || {})) {
+	const hostCfg = userConfig.otherHosts[host];
+
+	if (typeof hostCfg.password === "string") {
+		hostCfg.password = [hostCfg.password];
+	}
+
+	if (typeof hostCfg.logo === "string") {
+		hostCfg.logo = {"main": hostCfg.logo};
+	}
+}
+
+for (const password of _.concat(userConfig.password, _.map(userConfig.otherHosts, "password").filter(x => !!x))) {
 	if (!password.match(/^[0-9a-f]{64}$/i)) {
 		console.error("Password does not look like an sha256 hash. Read the damn docs");
 		process.exit(0);
