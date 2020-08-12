@@ -417,6 +417,7 @@ router.get(["/", "/home"], (req, res) => {
 	});
 });
 
+router.get("/login", (req, res) => {res.redirect(pathname+"home");});
 router.post("/login", (req, res) => {
 	if (!req.body.password) return error(req, res, "No password specified.");
 	if (!checkPassword(req.config, req.body.password)) return error(req, res, "Incorrect password.");
