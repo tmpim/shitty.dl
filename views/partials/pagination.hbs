@@ -1,5 +1,5 @@
 <p class="ui extra">
-	<b>{{addCommas paginationInfo.total_results}}</b> total results - <b>{{addCommas paginationInfo.total_pages}}</b> pages
+	<b>{{addCommas paginationInfo.total_results}}</b> total results - <b>{{addCommas paginationInfo.total_pages}}</b> pages - <a href="{{@root.route}}/all{{#if @root.query}}?{{@root.query}}{{/if}}">View all</a>
 </p>
 <div class="ui buttons">
 	<a href="{{@root.route}}/{{paginationInfo.previous_page}}{{#if @root.query}}?{{@root.query}}{{/if}}" class="ui icon button pageLeft {{#unless paginationInfo.has_previous_page}}disabled{{/unless}}">

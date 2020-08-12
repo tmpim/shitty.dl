@@ -747,9 +747,16 @@ function fileListing(mask, pageTemplate, route, req, res) {
 	if (pageTemplate == "links") finder.size('<=', maxUrlSize);
 	const files = finder.findFiles(mask);
 
-	let page = typeof req.params.page !== "undefined" ? parseInt(req.params.page) : 0;
-	let displayAll = (page == -1);
-	page = Math.min(Math.max(1, page), Math.ceil(files.length/48));
+	let page = typeof req.params.page !== "undefined" ? req.params.page : 1;
+	let displayAll = false;
+	if (page == "all") {
+		displayAll = true;
+		page = 1;
+	} else if (page == "random") {
+		page = Math.floor(Math.random() * Math.ceil(files.length/48)) + 1;
+	} else {
+		page = Math.min(Math.max(1, parseInt(page)), Math.ceil(files.length/48));
+	}
 
 	const paginationInfo = paginator.build(files.length, page);
 
