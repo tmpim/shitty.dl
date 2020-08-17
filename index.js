@@ -747,8 +747,16 @@ function fileListing(mask, pageTemplate, route, req, res) {
 	if (pageTemplate == "links") finder.size('<=', maxUrlSize);
 	const files = finder.findFiles(mask);
 
-	let page = typeof req.params.page !== "undefined" ? parseInt(req.params.page) : 0;
-	page = Math.min(Math.max(0, page), files.length);
+	let page = typeof req.params.page !== "undefined" ? req.params.page : 1;
+	let displayAll = false;
+	if (page == "all") {
+		displayAll = true;
+		page = 1;
+	} else if (page == "random") {
+		page = Math.floor(Math.random() * Math.ceil(files.length/48)) + 1;
+	} else {
+		page = Math.min(Math.max(1, parseInt(page)), Math.ceil(files.length/48));
+	}
 
 	const paginationInfo = paginator.build(files.length, page);
 
@@ -786,7 +794,7 @@ function fileListing(mask, pageTemplate, route, req, res) {
 		query: url.parse(req.url).query,
 		paginationInfo,
 		pages: _.range(paginationInfo.first_page, paginationInfo.last_page + 1),
-		files: _.slice(fullFiles, paginationInfo.first_result, paginationInfo.last_result + 1),
+		files: displayAll ? fullFiles : _.slice(fullFiles, paginationInfo.first_result, paginationInfo.last_result + 1),
 		imageFilesFilter,
 		audioFilesFilter,
 		videoFilesFilter,
