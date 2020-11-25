@@ -364,13 +364,13 @@ function checkPassword(conf, password) {
 	return conf.password.includes(passwordHash);
 }
 
-app.use(promBundle({
+/*app.use(promBundle({
 	includeMethod: true,
 	includePath: true,
 	normalizePath: req => {
 		return url.parse(req.originalUrl).pathname;
 	}
-}));
+}));*/
 
 function auth(req, res, next) {
 	if (!req.session || !req.session.authed) {
