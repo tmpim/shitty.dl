@@ -1,0 +1,17 @@
+node_modules/
+.idea/
+config.json
+stats.json
+nonces.json
+sessions
+/custom-name.js
+/*.txt
+/imgs/
+/public/*
+!/public/poop.png
+!/public/jquery.mobile.custom.min.js
+!/public/service-worker.js
+!/public/poop192.png
+!/public/poop512.png
+!/public/poop96.png
+!/public/poop32.png

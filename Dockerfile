@@ -1,8 +1,8 @@
-FROM node:16-alpine
+FROM node:12-alpine
 WORKDIR /usr/src/app
 
-COPY package*.json ./
-RUN apk add ca-certificates
+COPY package.json package-lock.json ./
+RUN apk add ca-certificates g++ make python3
 RUN npm install --legacy-peer-deps
 RUN npm install highlights language-lua
 
