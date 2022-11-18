@@ -4,7 +4,7 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 RUN apk add ca-certificates
 RUN npm install --legacy-peer-deps
-RUN npm install highlights language-lua language-ocaml language-haskell
+RUN npm install highlights language-lua
 
 COPY . .
 
