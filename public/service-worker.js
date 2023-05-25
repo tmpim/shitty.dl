@@ -35,7 +35,7 @@ self.addEventListener('fetch', function(event) {
 	if (event.request.method == 'POST' && url.pathname.endsWith('webshareupload')) {
 		let req = fetch(event.request);
 		event.respondWith(req);
-		poke('Uploading File', 'Please wait while file is uplading');
+		poke('Uploading File', 'Please wait while file is uploading');
 		event.waitUntil(uploadDone(req));
 	}
 	return event.respondWith(fetch(event.request));
