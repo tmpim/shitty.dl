@@ -16,6 +16,10 @@
 						<input type="password" placeholder="Password" name="password">
 						<button type="submit" class="ui basic button">Submit</button>
 					</div>
+					
+					{{#if oidc}}
+						<a href="/oidc/redirect">Login with {{oidcProviderName}}</a>
+					{{/if}}
 				{{/if}}
 			</form>
 			<p class="ui content text">

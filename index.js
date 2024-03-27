@@ -98,6 +98,7 @@ const helpers = require("handlebars-helpers")();
 const dateformat = require("helper-dateformat");
 const Finder = require("fs-finder");
 const moment = require("moment");
+const openidClient = require("openid-client");
 
 const paginator = new require("paginator")(48, 8);
 const crypto = require("crypto");
@@ -128,7 +129,7 @@ const imageFilesFilter = _.map(config.imageFiles,(v)=>"."+v).join(",");
 const audioFilesFilter = _.map(config.audioFiles,(v)=>"."+v).join(",");
 const videoFilesFilter = _.map(config.videoFiles,(v)=>"."+v).join(",");
 const galleryMask = "*.<("+config.imageFiles.concat(config.audioFiles,config.videoFiles).join("|")+")$>";
-
+  
 let nonces = {};
 let noncesLookup = {};
 
@@ -138,6 +139,19 @@ let customName;
 if (fs.existsSync("custom-name.js")) {
 	customName = require("./custom-name.js");
 }
+
+let oidcClient;
+(async() => {
+  const oidcIssuer = config.oidcUrl && await openidClient.Issuer.discover(config.oidcUrl);
+  oidcClient = new oidcIssuer.Client({
+    client_id: config.oidcClientId,
+    client_secret: config.oidcClientSecret,
+    redirect_uris: [config.url + "oidc/callback"],
+    response_types: ["code"],
+    token_endpoint_auth_method: "client_secret_post",
+  });
+})()
+const oidcStateMap = new Map();
 
 if (fs.existsSync("stats.json")) {
 	try {
@@ -413,7 +427,9 @@ router.get(["/", "/home"], (req, res) => {
 		title: conf.title,
 		disclaimer: conf.disclaimer,
 		authed: req.session && req.session.authed,
-		pathname
+		pathname,
+    oidc: !!oidcClient,
+    oidcProviderName: conf.oidcProviderName
 	});
 });
 
@@ -427,6 +443,34 @@ router.post("/login", (req, res) => {
 
 	res.redirect(pathname+"gallery");
 });
+
+router.get("/oidc/redirect", (req, res) => {
+  if (!oidcClient) return error(req, res, "OIDC not configured");
+  const state = Math.random().toString(36).slice(2, 7);
+  oidcStateMap.set(req.headers["X-Forwarded-For"] || req.ip, state);
+  res.redirect(oidcClient.authorizationUrl({
+    scope: config.oidcScopes,
+    state
+  }));
+})
+
+router.get("/oidc/callback", async (req, res) => {
+  if (!oidcClient) return error(req, res, "OIDC not configured");
+
+  try {
+    const params = oidcClient.callbackParams(req.url);
+    await oidcClient.callback(config.url + "/oidc/callback", params, {
+      state: oidcStateMap.get(req.headers["X-Forwarded-For"] || req.ip)
+    });
+
+    req.session.authed = true;
+    req.session.save();
+  
+    res.redirect(pathname+"gallery");
+  } catch(e) {
+    return error(req, res, "OIDC authentication failed");
+  }
+})
 
 router.get(["/upload","/webshareupload"], auth, (req, res) => {
 	const conf = req.config;
