@@ -446,7 +446,7 @@ router.post("/login", (req, res) => {
 
 router.get("/oidc/redirect", (req, res) => {
   if (!oidcClient) return error(req, res, "OIDC not configured");
-  const state = Math.random().toString(36).slice(2, 7);
+  const state = crypto.randomBytes(8).toString("hex");
   oidcStateMap.set(req.headers["X-Forwarded-For"] || req.ip, state);
   res.redirect(oidcClient.authorizationUrl({
     scope: config.oidcScopes,
