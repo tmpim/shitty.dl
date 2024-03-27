@@ -274,6 +274,7 @@ app.use(session({
 	resave: false,
 	saveUninitialized: false
 }));
+app.set("trust proxy", ["loopback", "linklocal", "uniquelocal"]);
 
 bb.extend(app, {
 	upload: true
@@ -447,7 +448,8 @@ router.post("/login", (req, res) => {
 router.get("/oidc/redirect", (req, res) => {
   if (!oidcClient) return error(req, res, "OIDC not configured");
   const state = crypto.randomBytes(8).toString("hex");
-  oidcStateMap.set(req.headers["X-Forwarded-For"] || req.ip, state);
+  oidcStateMap.set(req.ip, state);
+	console.log(req.ip)
   res.redirect(oidcClient.authorizationUrl({
     scope: config.oidcScopes,
     state
@@ -460,7 +462,7 @@ router.get("/oidc/callback", async (req, res) => {
   try {
     const params = oidcClient.callbackParams(req.url);
     await oidcClient.callback(config.url + "/oidc/callback", params, {
-      state: oidcStateMap.get(req.headers["X-Forwarded-For"] || req.ip)
+      state: oidcStateMap.get(req.ip)
     });
 
     req.session.authed = true;
