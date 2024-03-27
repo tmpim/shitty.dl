@@ -29,6 +29,7 @@
     "paginator": "^1.0.0",
     "read-chunk": "^2.1.0",
     "sanitize-filename": "^1.6.1",
-    "session-file-store": "^1.2.0"
+    "session-file-store": "^1.2.0",
+    "openid-client": "5.6.5"
   }
 }

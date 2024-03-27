@@ -41,6 +41,7 @@ Make a file called `config.json`, with the following properties:
     "rawPasteAgents": "^(?:computercraft|curl|wget)"
 }
 ```
+
 - `logo` - Filenames of your logos images. Make sure to put them in /public.
 - `name` - Name of your file host.
 - `app_name` - Shortened name of your file host used in app.
@@ -62,6 +63,11 @@ Make a file called `config.json`, with the following properties:
 - `videoFiles` Array of file extentions that shitty will treat as video.
 - `languagePackages` Array of npm package names containing atom language grammars.
 - `rawPasteAgents` Regular expression (case-insensitive) matching agents to return raw pastes for (on `/paste` and `/edit`). Use `null` to disable. 
+- `oidcUrl` Base URL for your OpenID Connect host. It uses OpenID Connect Discovery to find the settings. OIDC is optional.
+- `oidcClientId` OpenID Connect client id.
+- `oidcClientSecret` OpenID Connect client secret.
+- `oidcScopes` Scopes to request from the OpenID Connect server.
+- `oidcProviderName` Frontend name for the login link
 
 ## Custom names
 
